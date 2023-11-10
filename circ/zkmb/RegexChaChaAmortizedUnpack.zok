@@ -1,0 +1,15 @@
+from "Util.zok" import u8_to_field, xor_arrays
+from "DotChaChaAmortizedUnpack.zok" import verifyUnpack
+import "./policy.zok" as regex1000
+
+def main(private u8[1000] pad, field comm_pad, u8[1000] ciphertext) -> bool:
+        assert(verifyUnpack(pad, comm_pad))
+
+        u8[1000] plaintext = xor_arrays(pad, ciphertext)
+        field[1000] field_plaintext = [0; 1000]
+        for u32 i in 0..1000 do
+            field_plaintext[i] = u8_to_field(plaintext[i])
+        endfor
+        bool output = regex1000(field_plaintext, plaintext)
+
+        return true

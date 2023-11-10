@@ -1,0 +1,11 @@
+appenders:
+  stderr:
+    kind: console
+    target: stderr
+    encoder:
+      pattern: "{d(%Y-%m-%d %H:%M:%S%.3f)} {level} {target}: {message}{n}"
+
+root:
+  level: warn
+  appenders:
+    - stderr

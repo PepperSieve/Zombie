@@ -1,0 +1,219 @@
+from "../Util.zok" import u16_to_u8, u8_to_u32, array_u32_to_u8, array_u8_to_u32, u32_to_u16, u16_to_u32, u8_to_u16
+import "../shaRound.zok" as shaRound
+from "HKDF.zok" import hkdf_expand_derive_secret, hkdf_expand_derive_tk, hkdf_expand_derive_iv, hkdf_extract, hmac, get_tls_hkdf_label, get_tls_hkdf_label_empty, hkdf_expand_derive_secret_empty
+from "../ChaCha.zok" import chacha_decrypt_128bytes_middle
+from "../AES.zok" import aes_gcm_decrypt_128bytes_middle
+from "EMBED" import u8_to_bits
+
+def pad_tail(u8[128] tail, u8 tail_length, u16 full_length) -> u8[128]:
+    u8 pad_length = if tail_length <= 55 then 64 else 128 fi
+    // TODO: may full_length * 8 overflow?
+    u8[8] length_bits = [...[0; 6], u16_to_u8(full_length * 8 / 256), u16_to_u8(full_length * 8 % 256)]
+    u8[128] result = [0; 128]
+    u32 tail_length_32 = u8_to_u32(tail_length)
+    u32 pad_length_32 = u8_to_u32(pad_length)
+    for u32 i in 0..128 do
+      result[i] = if i < tail_length_32 then tail[i] else 0 fi
+      result[i] = if i == tail_length_32 then 128 else result[i] fi
+      // avoid array out of bound
+      u32 idx = if pad_length_32 - i <= 8 && pad_length_32 - i > 0 then 8 - (pad_length_32 - i) else 0 fi
+      result[i] = if i > tail_length_32 && pad_length_32 - i <= 8 then length_bits[idx] else result[i] fi
+    endfor
+    return result
+
+// though tail is of length 128, it's length is at most 64 + 36
+def sha2_of_tail(u8[128] tail, u8 tail_length, u16 full_length, u32[8] H_checkpoint) -> u8[32]:
+    // tail_length can be at most 64 + 36
+    // CAUTION: is there correct? 
+    bool second_round = if tail_length <= 55 then false else true fi
+    u8[128] padded_tail = pad_tail(tail, tail_length, full_length)
+    u32[32] padded_tail_32 = array_u8_to_u32(padded_tail)
+    u32[8] current_hash = shaRound(padded_tail_32[0..16], H_checkpoint)
+    u32[8] current_hash2 = shaRound(padded_tail_32[16..32], current_hash)
+    current_hash = if second_round then current_hash2 else current_hash fi
+    return array_u32_to_u8(current_hash)
+
+def double_sha_from_checkpoint(u32[8] H_checkpoint, u16 full_length, u16 prefix_length, u8[128] full_tail_string, u8 full_tail_length, u8 prefix_tail_length) -> u8[2][32]:
+    u8[32] prefix_output = sha2_of_tail(full_tail_string, prefix_tail_length, prefix_length, H_checkpoint)
+    u8[32] full_output = sha2_of_tail(full_tail_string, full_tail_length, full_length, H_checkpoint)
+    return [prefix_output, full_output]
+
+def get1RTT_HS_only_CO_ChaCha(u8[32] HS, u8[32] H2, u16 CH_SH_len, u16 ServExt_len, u8[128] ServExt_ct_tail, u8 ServExt_tail_len, u32[8] SHA_H_Checkpoint) -> u8[44]:
+    u8[32] SHTS = hkdf_expand_derive_secret(HS, [115, 32, 104, 115, 32, 116, 114, 97, 102, 102, 105, 99], H2)
+
+    // traffic key and iv for "server handshake" messages 
+    u8[32] tk_shs = hkdf_expand_derive_tk(SHTS)
+    u8[12] nonce_shs = hkdf_expand_derive_iv(SHTS)
+    u16 TR3_len = CH_SH_len + ServExt_len
+    u16 TR7_len = TR3_len - 36
+
+    // ServExt = ServExt_head || ServExt_tail 
+    u16 ServExt_head_length = ServExt_len - u8_to_u16(ServExt_tail_len)
+
+    // To decrypt the ServExt_tail, we need to calculate the ChaCha
+    // --> ChaCha blocks are 64 bytes long (as opposed to just 16 in AES)
+    u16 chacha_block_number = ServExt_head_length / 64
+
+    // Additionally, the ServExt_tail might not start perfectly at the start of a block 
+    // That is, the length of ServExt_head may not be a multiple of 64 (the ChaCha block size) 
+    u16 offset = ServExt_head_length % 64
+
+    // This function decrypts the tail with the specific ChaCha block number and offset within the block 
+    u8[128] ServExt_tail = chacha_decrypt_128bytes_middle(tk_shs, nonce_shs, ServExt_ct_tail, u16_to_u32(chacha_block_number),u16_to_u32(offset))
+    u8[2][32] H7_H3 = double_sha_from_checkpoint(SHA_H_Checkpoint, TR3_len, TR7_len, ServExt_tail, ServExt_tail_len, ServExt_tail_len - 36)
+    
+    u8[32] H_7 = H7_H3[0]
+    u8[32] H_3 = H7_H3[1]
+
+    // Derive the SF value 
+    // u8 array for "finished"
+    u8[32] fk_S = hkdf_expand_derive_secret_empty(SHTS, [102, 105, 110, 105, 115, 104, 101, 100])
+    u8[32] SF_calculated = hmac(fk_S, H_7)
+
+    // Now, we need to calculate the actual SF value present in the transcript 
+    // We know that SF is in the tr3_tail  
+    // And that it is the last 32 bytes of tr3_tail... so there are ct3_tail_length - 32 characters before it 
+    u8[32] SF_transcript = [0; 32]
+
+    for u32 i in 0..32 do
+      SF_transcript[i] = ServExt_tail[i + u8_to_u32(ServExt_tail_len) - 32]
+    endfor
+
+    // Verify that the two SF values are identical 
+    assert(SF_calculated == SF_transcript) 
+
+    u8[32] hash_of_empty = [227, 176, 196, 66, 152, 252, 28, 20, 154, 251, 244, 200, 153, 111, 185, 36, 39, 174, 65, 228, 100, 155, 147, 76, 164, 149, 153, 27, 120, 82, 184, 85]
+    // u8 array for "derived"
+    u8[32] dHS = hkdf_expand_derive_secret(HS, [100, 101, 114, 105, 118, 101, 100], hash_of_empty)
+
+    u8[32] new_zero_array = [0; 32]
+    u8[32] MS = hkdf_extract(dHS, new_zero_array)
+
+    // u8 array for "c ap traffic"
+    u8[32] CATS = hkdf_expand_derive_secret(MS, [99, 32, 97, 112, 32, 116, 114, 97, 102, 102, 105, 99], H_3)
+
+    // client application traffic key, iv 
+    u8[32] tk_capp = hkdf_expand_derive_tk::<32>(CATS)
+    u8[12] iv_capp = hkdf_expand_derive_iv::<12>(CATS)
+
+    return [...tk_capp, ...iv_capp]
+  
+def get1RTT_HS_only_CO_AES(u8[32] HS, u8[32] H2, u16 CH_SH_len, u16 ServExt_len, u8[128] ServExt_ct_tail, u8 ServExt_tail_len, u32[8] SHA_H_Checkpoint) -> u8[28]:
+    u8[32] SHTS = hkdf_expand_derive_secret(HS, [115, 32, 104, 115, 32, 116, 114, 97, 102, 102, 105, 99], H2)
+
+    // traffic key and iv for "server handshake" messages 
+    u8[16] tk_shs = hkdf_expand_derive_tk(SHTS)
+    u8[12] nonce_shs = hkdf_expand_derive_iv(SHTS)
+    u16 TR3_len = CH_SH_len + ServExt_len
+    u16 TR7_len = TR3_len - 36
+
+    // ServExt = ServExt_head || ServExt_tail 
+    u16 ServExt_head_length = ServExt_len - u8_to_u16(ServExt_tail_len)
+
+    // To decrypt the ServExt_tail, we need to calculate the ChaCha
+    // --> ChaCha blocks are 64 bytes long (as opposed to just 16 in AES)
+    u16 chacha_block_number = ServExt_head_length / 16
+
+    // Additionally, the ServExt_tail might not start perfectly at the start of a block 
+    // That is, the length of ServExt_head may not be a multiple of 64 (the ChaCha block size) 
+    u16 offset = ServExt_head_length % 16
+
+    // This function decrypts the tail with the specific ChaCha block number and offset within the block 
+    u8[128] ServExt_tail = aes_gcm_decrypt_128bytes_middle::<128>(tk_shs, nonce_shs, ServExt_ct_tail, u16_to_u32(chacha_block_number),u16_to_u32(offset))
+    u8[2][32] H7_H3 = double_sha_from_checkpoint(SHA_H_Checkpoint, TR3_len, TR7_len, ServExt_tail, ServExt_tail_len, ServExt_tail_len - 36)
+    
+    u8[32] H_7 = H7_H3[0]
+    u8[32] H_3 = H7_H3[1]
+
+    // Derive the SF value 
+    // u8 array for "finished"
+    u8[32] fk_S = hkdf_expand_derive_secret_empty(SHTS, [102, 105, 110, 105, 115, 104, 101, 100])
+    u8[32] SF_calculated = hmac(fk_S, H_7)
+
+    // Now, we need to calculate the actual SF value present in the transcript 
+    // We know that SF is in the tr3_tail  
+    // And that it is the last 32 bytes of tr3_tail... so there are ct3_tail_length - 32 characters before it 
+    u8[32] SF_transcript = [0; 32]
+
+    for u32 i in 0..32 do
+      SF_transcript[i] = ServExt_tail[i + u8_to_u32(ServExt_tail_len) - 32]
+    endfor
+
+    // Verify that the two SF values are identical 
+    assert(SF_calculated == SF_transcript) 
+
+    u8[32] hash_of_empty = [227, 176, 196, 66, 152, 252, 28, 20, 154, 251, 244, 200, 153, 111, 185, 36, 39, 174, 65, 228, 100, 155, 147, 76, 164, 149, 153, 27, 120, 82, 184, 85]
+    // u8 array for "derived"
+    u8[32] dHS = hkdf_expand_derive_secret(HS, [100, 101, 114, 105, 118, 101, 100], hash_of_empty)
+
+    u8[32] new_zero_array = [0; 32]
+    u8[32] MS = hkdf_extract(dHS, new_zero_array)
+
+    // u8 array for "c ap traffic"
+    u8[32] CATS = hkdf_expand_derive_secret(MS, [99, 32, 97, 112, 32, 116, 114, 97, 102, 102, 105, 99], H_3)
+
+    // client application traffic key, iv 
+    u8[16] tk_capp = hkdf_expand_derive_tk::<16>(CATS)
+    u8[12] iv_capp = hkdf_expand_derive_iv::<12>(CATS)
+
+    return [...tk_capp, ...iv_capp]
+
+def main(u8[32] HS, u8[32] H2, u16 CH_SH_len, u16 ServExt_len, u8[128] ServExt_ct_tail, u8 ServExt_tail_len, u32[8] SHA_H_Checkpoint) -> u8[12]:
+    u8[32] SHTS = hkdf_expand_derive_secret(HS, [115, 32, 104, 115, 32, 116, 114, 97, 102, 102, 105, 99], H2)
+
+    // traffic key and iv for "server handshake" messages 
+    u8[32] tk_shs = hkdf_expand_derive_tk(SHTS)
+    u8[12] nonce_shs = hkdf_expand_derive_iv(SHTS)
+    u16 TR3_len = CH_SH_len + ServExt_len
+    u16 TR7_len = TR3_len - 36
+
+    // ServExt = ServExt_head || ServExt_tail 
+    u16 ServExt_head_length = ServExt_len - u8_to_u16(ServExt_tail_len)
+
+    // To decrypt the ServExt_tail, we need to calculate the ChaCha
+    // --> ChaCha blocks are 64 bytes long (as opposed to just 16 in AES)
+    u16 chacha_block_number = ServExt_head_length / 64
+
+    // Additionally, the ServExt_tail might not start perfectly at the start of a block 
+    // That is, the length of ServExt_head may not be a multiple of 64 (the ChaCha block size) 
+    u16 offset = ServExt_head_length % 64
+
+    // This function decrypts the tail with the specific ChaCha block number and offset within the block 
+    u8[128] ServExt_tail = chacha_decrypt_128bytes_middle(tk_shs, nonce_shs, ServExt_ct_tail, u16_to_u32(chacha_block_number),u16_to_u32(offset))
+    u8[2][32] H7_H3 = double_sha_from_checkpoint(SHA_H_Checkpoint, TR3_len, TR7_len, ServExt_tail, ServExt_tail_len, ServExt_tail_len - 36)
+    
+    u8[32] H_7 = H7_H3[0]
+    u8[32] H_3 = H7_H3[1]
+
+    // Derive the SF value 
+    // u8 array for "finished"
+    u8[32] fk_S = hkdf_expand_derive_secret_empty(SHTS, [102, 105, 110, 105, 115, 104, 101, 100])
+    u8[32] SF_calculated = hmac(fk_S, H_7)
+
+    // Now, we need to calculate the actual SF value present in the transcript 
+    // We know that SF is in the tr3_tail  
+    // And that it is the last 32 bytes of tr3_tail... so there are ct3_tail_length - 32 characters before it 
+    u8[32] SF_transcript = [0; 32]
+
+    for u32 i in 0..32 do
+      SF_transcript[i] = ServExt_tail[i + u8_to_u32(ServExt_tail_len) - 32]
+    endfor
+
+    // Verify that the two SF values are identical 
+    assert(SF_calculated == SF_transcript) 
+
+    u8[32] hash_of_empty = [227, 176, 196, 66, 152, 252, 28, 20, 154, 251, 244, 200, 153, 111, 185, 36, 39, 174, 65, 228, 100, 155, 147, 76, 164, 149, 153, 27, 120, 82, 184, 85]
+    // u8 array for "derived"
+    u8[32] dHS = hkdf_expand_derive_secret(HS, [100, 101, 114, 105, 118, 101, 100], hash_of_empty)
+
+    u8[32] new_zero_array = [0; 32]
+    u8[32] MS = hkdf_extract(dHS, new_zero_array)
+
+    // u8 array for "c ap traffic"
+    u8[32] CATS = hkdf_expand_derive_secret(MS, [99, 32, 97, 112, 32, 116, 114, 97, 102, 102, 105, 99], H_3)
+
+    // client application traffic key, iv 
+    u8[32] tk_capp = hkdf_expand_derive_tk::<32>(CATS)
+    u8[12] iv_capp = hkdf_expand_derive_iv::<12>(CATS)
+    
+    return iv_capp

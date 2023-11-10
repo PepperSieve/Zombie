@@ -1,0 +1,4 @@
+from "../tls_key_schedules/HKDF.zok" import hkdf_expand
+
+def main(u8[63] key, u8[63] info) -> u8[32]:
+    return hkdf_expand(key, info)

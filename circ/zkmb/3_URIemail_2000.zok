@@ -1,0 +1,143 @@
+
+const u32 STR_LENGTH = 2000
+const u32 PROXY_DIST = 300
+
+def isZero(field x) -> field:
+	field y = if x == 0 then 1 else 0 fi
+	return y
+
+def isNotZero(field x) -> field:
+	field y = if x != 0 then 1 else 0 fi
+	return y
+
+def inRange(u8 x, u8 l, u8 h) -> field:
+	field y = if l <= x && x <= h then 1 else 0 fi
+	return y
+
+def spread(field[STR_LENGTH] x) -> field[STR_LENGTH]:
+	field[STR_LENGTH] y = [0;STR_LENGTH]
+	for u32 i in PROXY_DIST..(STR_LENGTH-PROXY_DIST) do
+		field sum = 0
+		for u32 j in (i-PROXY_DIST)..(i+PROXY_DIST) do
+			sum = sum + x[j]
+		endfor
+		y[i] = sum
+	endfor
+	return y
+
+def procCheck(field[STR_LENGTH] l, field[STR_LENGTH] r) -> bool:
+	field[STR_LENGTH] ls = spread(l)
+	for u32 i in 0..STR_LENGTH do
+		assert(ls[i] * r[i] == 0)
+	endfor
+	return true
+
+def parseExtract(field[STR_LENGTH] s) -> field[STR_LENGTH]:
+	field[STR_LENGTH] ls = [0; STR_LENGTH]
+	for u32 i in 4..STR_LENGTH do
+		ls[i] = ls[i - 1] + isZero((s[i - 4] - 13) + 256 * (s[i - 3] - 10) + 65536 * (s[i - 2] - 13) + 16777216 * (s[i - 1] - 10))
+	endfor
+	return ls
+
+def main(field[STR_LENGTH] t, u8[STR_LENGTH] tu) -> bool:
+	field[STR_LENGTH] start = [1; STR_LENGTH]
+	field accum = 0
+	field[STR_LENGTH] t_0 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		t_0[i] = (t[i] - 32)
+	endfor
+	field[STR_LENGTH] p_5 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		p_5[i] = 1 - t_0[i]
+	endfor
+	field[STR_LENGTH] t_1 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		t_1[i] = (t[i] - 32) * (t[i] - 64)
+	endfor
+	field[STR_LENGTH] p_7 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		p_7[i] = 1 - t_1[i]
+	endfor
+	field[STR_LENGTH] t_2 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		t_2[i] = (t[i] - 32) * (t[i] - 47)
+	endfor
+	field[STR_LENGTH] p_3 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		p_3[i] = 1 - t_2[i]
+	endfor
+	field[STR_LENGTH] t_3 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		t_3[i] = (inRange(tu[i], 65, 122) + isZero((t[i] - 48) * (t[i] - 49) * (t[i] - 50) * (t[i] - 51) * (t[i] - 52) * (t[i] - 53) * (t[i] - 54) * (t[i] - 55) * (t[i] - 56) * (t[i] - 57))) * isZero((isZero((t[i] - 91) * (t[i] - 92) * (t[i] - 93) * (t[i] - 94) * (t[i] - 95) * (t[i] - 96))))
+	endfor
+	field[STR_LENGTH] p_1 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		p_1[i] = 1 - t_3[i]
+	endfor
+	field[STR_LENGTH] p_4 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		p_4[i] = isZero((t[i - 0] - 58))
+	endfor
+	field[STR_LENGTH] p_2 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		p_2[i] = isZero((t[i - 2] - 58) + (t[i - 1] - 47) * 256 + (t[i - 0] - 47) * 65536)
+	endfor
+	field[STR_LENGTH] p_6 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		p_6[i] = isZero((t[i - 0] - 64))
+	endfor
+	field[STR_LENGTH] t_4 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		t_4[i] = (inRange(tu[i], 65, 122)) * isZero((isZero((t[i] - 91) * (t[i] - 92) * (t[i] - 93) * (t[i] - 94) * (t[i] - 95) * (t[i] - 96))))
+	endfor
+	field[STR_LENGTH] p_0 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		p_0[i] = 1 - t_4[i]
+	endfor
+	field[STR_LENGTH] s_0 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_0[i] = p_0[i] * start[i - 1]
+	endfor
+	field[STR_LENGTH] s_2 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_2[i] = p_1[i] * (s_0[i - 1] + s_2[i - 1])
+	endfor
+	field[STR_LENGTH] s_3 = [0; STR_LENGTH]
+	for u32 i in 3..STR_LENGTH do
+		s_3[i] = p_2[i] * (s_0[i - 3] + s_2[i - 3])
+	endfor
+	field[STR_LENGTH] s_5 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_5[i] = p_3[i] * (s_3[i - 1] + s_5[i - 1])
+	endfor
+	field[STR_LENGTH] s_7 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_7[i] = p_4[i] * (s_5[i - 1])
+	endfor
+	field[STR_LENGTH] s_9 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_9[i] = p_5[i] * (s_7[i - 1] + s_9[i - 1])
+	endfor
+	field[STR_LENGTH] s_11 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_11[i] = p_6[i] * (s_5[i - 1] + s_7[i - 1] + s_9[i - 1])
+	endfor
+	field[STR_LENGTH] s_13 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_13[i] = p_7[i] * start[i - 1]
+	endfor
+	field[STR_LENGTH] s_15 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_15[i] = p_6[i] * (s_13[i - 1])
+	endfor
+	field[STR_LENGTH] s_18 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_18[i] = p_7[i] * (s_11[i - 1] + s_15[i - 1] + s_18[i - 1])
+	endfor
+	field[STR_LENGTH] f_19 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		f_19[i] = (s_18[i])
+		accum = accum + f_19[i]
+	endfor
+	assert(accum == 0)
+	return false

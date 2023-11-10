@@ -1,0 +1,137 @@
+import "../sha256.zok" as sha2
+from "../Util.zok" import array_u8_to_u32, array_u32_to_u8, u32_to_four_u8, u32_to_u8, u32_to_u16, u16_to_u8
+
+def xor_with_byte(u8[64] input, u8 b) -> u8[64]:
+    u8[64] result = [0; 64]
+    for u8 i in 0..64 do
+        result[i] = input[i] ^ b
+    endfor
+    return result
+
+def pad_zero<N>(u8[N] a) -> u8[64]:
+    u8[64] result = [0; 64]
+    for u32 i in 0..N do
+        result[i] = a[i]
+    endfor
+    return result
+
+def sha_padded_bytes<M>(u8[M] bytes) -> u32[8]:
+    u32[M / 64][16] preimage = [[0; 16]; M / 64]
+    for u32 i in 0..M / 64 do
+        for u32 j in 0..64 do
+            preimage[i] = array_u8_to_u32(bytes[(64 * i)..(64 * i + 64)])
+        endfor
+    endfor
+    return sha2(preimage)
+
+def pad<M, N>(u8[M] bytes) -> u8[N]:
+    u8[N] result = [0; N]
+    for u32 i in 0..M do
+        result[i] = bytes[i]
+    endfor
+    result[M] = 128
+    u8[8] length_bits = [...[0; 4], ...u32_to_four_u8(M * 8)]
+    for u32 i in 0..8 do
+        result[N - 8 + i] = length_bits[i]
+    endfor
+    return result
+
+def pad_and_sha<M>(u8[M] bytes) -> u32[8]:
+    u32 current_blocks = (M + 64 - 1) / 64
+    u32 salt_padded_len = if M % 64 <= 55 then current_blocks * 64 else (current_blocks + 1) * 64 fi
+    u8[salt_padded_len] bytes_padded = pad(bytes)
+    return sha_padded_bytes(bytes_padded)
+
+// TODO: length of salt can be larger than 64
+def hmac<N, M>(u8[N] key, u8[M] salt) -> u8[32]:
+    assert(N > 0 && N <= 64)
+    assert(M > 0 && M <= 64)
+    u8 IPAD = 54
+    u8 OPAD = 92
+    u8[64] key_padded = [...key, ...[0; 64 - N]]
+    u8[64] key_ipad = xor_with_byte(key_padded, IPAD)
+    u8[64] key_opad = xor_with_byte(key_padded, OPAD)
+    u32[16] key_ipad_32 = array_u8_to_u32(key_ipad)
+    u32[16] key_opad_32 = array_u8_to_u32(key_opad)
+    // assume bit_length is u32
+    u32 bit_length = 512 + M * 8
+    u32 last_block_length = bit_length % 512
+    u32 num_bytes_left = (512 - last_block_length) / 8
+    u32 current_blocks = (M + 64 - 1) / 64
+    u32 salt_padded_len = if M % 64 <= 55 then current_blocks * 64 else (current_blocks + 1) * 64 fi
+    u8[salt_padded_len] salt_padded = pad(salt)
+    u32[8] inner_hash = pad_and_sha([...key_ipad, ...salt])
+    u8[32] result = array_u32_to_u8(pad_and_sha([...key_opad, ...array_u32_to_u8::<8, 32>(inner_hash)]))
+    return result
+
+def hkdf_extract(u8[64] salt, u8[64] key) -> u8[32]:
+    return hmac(salt, key)
+
+def hkdf_expand<N, M>(u8[N] key, u8[M] info) -> u8[32]:
+    u8[M + 1] label = [...info, 1]
+    return hmac(key, label)
+
+// workaround here
+def get_tls_hkdf_label<LABEL_LEN, CONTEXT_LEN, RESULT_LEN>(u16 output_len, u8[LABEL_LEN] label_string, u8[CONTEXT_LEN] context_hash) -> u8[RESULT_LEN]:
+    u8[2] output_len_bytes = [u16_to_u8(output_len / 256), u16_to_u8(output_len % 256)]
+    u8[6] str_of_tls13_space = [116, 108, 115, 49, 51, 32]
+    u8[6 + LABEL_LEN] label_bytes = [...str_of_tls13_space, ...label_string]
+    u8 label_len_byte = 6 + u32_to_u8(LABEL_LEN)
+    u8 context_hash_len_byte = u32_to_u8(CONTEXT_LEN)
+    return [...output_len_bytes, label_len_byte, ...label_bytes, context_hash_len_byte, ...context_hash]
+
+def get_tls_hkdf_label_empty<LABEL_LEN, RESULT_LEN>(u16 output_len, u8[LABEL_LEN] label_string) -> u8[RESULT_LEN]:
+    u8[2] output_len_bytes = [u16_to_u8(output_len / 256), u16_to_u8(output_len % 256)]
+    u8[6] str_of_tls13_space = [116, 108, 115, 49, 51, 32]
+    u8[6 + LABEL_LEN] label_bytes = [...str_of_tls13_space, ...label_string]
+    u8 label_len_byte = 6 + u32_to_u8(LABEL_LEN)
+    u8 context_hash_len_byte = 0
+    return [...output_len_bytes, label_len_byte, ...label_bytes, context_hash_len_byte]
+
+def hkdf_expand_derive_tk<N>(u8[32] secret) -> u8[N]:
+    u8[3] str_of_key = [107, 101, 121]
+    u8[10 + 3] hkdf_label = get_tls_hkdf_label_empty(u32_to_u16(N), str_of_key)
+    u8[32] result = hkdf_expand(secret, hkdf_label)
+    u8[N] sliced_result = [0; N]
+    for u32 i in 0..N do
+        sliced_result[i] = result[i]
+    endfor
+    return sliced_result
+
+def hkdf_expand_derive_iv<N>(u8[32] secret) -> u8[N]:
+    u8[2] str_of_iv = [105, 118]
+    u8[10 + 2] hkdf_label = get_tls_hkdf_label_empty(u32_to_u16(N), str_of_iv)
+    u8[32] result = hkdf_expand(secret, hkdf_label)
+    u8[N] sliced_result = [0; N]
+    for u32 i in 0..N do
+        sliced_result[i] = result[i]
+    endfor
+    return sliced_result
+
+def hkdf_expand_derive_secret<LABEL_LEN, CONTEXT_LEN>(u8[32] secret, u8[LABEL_LEN] label_string, u8[CONTEXT_LEN] context_hash) -> u8[32]:
+    u8[10 + LABEL_LEN + CONTEXT_LEN] hkdf_label = get_tls_hkdf_label(32, label_string, context_hash)
+    return hkdf_expand(secret, hkdf_label)
+
+def hkdf_expand_derive_secret_empty<LABEL_LEN>(u8[32] secret, u8[LABEL_LEN] label_string) -> u8[32]:
+    u8[10 + LABEL_LEN] hkdf_label = get_tls_hkdf_label_empty(32, label_string)
+    return hkdf_expand(secret, hkdf_label)
+
+// import os
+// from cryptography.hazmat.primitives import hashes
+// from cryptography.hazmat.primitives.kdf.hkdf import HKDFExpand
+
+// info = bytes.fromhex('0005')
+// key_material = bytes.fromhex('0005')
+// hkdf = HKDFExpand(
+//     algorithm=hashes.SHA256(),
+//     length=32,
+//     info=info,
+// )
+// key = hkdf.derive(key_material)
+// print(key.hex())
+
+// hkdf_expand produce same result as the python code above
+def main(u8[2] key, u8[2] info) -> u8[32]:
+    // u32[2] key = [0, 5]
+    // u32[2] info = [0, 5]
+    return hkdf_expand(key, info)

@@ -1,0 +1,10 @@
+venv
+mitm.crt
+mitm.key
+*.txt
+tmp*
+gen
+jsnark
+data
+keys
+build

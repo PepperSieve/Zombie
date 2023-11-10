@@ -1,0 +1,13 @@
+from "../third_party/ZoKrates/zokrates_stdlib/stdlib/hashes/poseidon/poseidon.zok" import generate_poseidon
+from "ChaCha.zok" import chachaEncrypt
+from "Util.zok" import xor_field, field_to_u8_array, pack_u8_arr, u32_to_four_u8, compare_field
+from "LabelExtraction.zok" import extractDoTReverse
+from "./membership_merkle/non_membership.zok" import check_wildcard_python_path
+
+def main(private u8[32] key, private u8[12] nonce, field comm, u32 SN, u8[255] dns_ct, field root, private u8[255] left_domain_name, private u8[255] right_domain_name, private u32 left_index, private u32 right_index, private field[21] left_path_array, private field[21] right_path_array, private u64 left_dir, private u64 right_dir) -> bool:
+        u8[2][255] extraction_values = extractDoTReverse(dns_ct)
+
+        u8[255] dns_labels_rev = extraction_values[0]
+
+        assert(check_wildcard_python_path::<21>(dns_labels_rev, root, left_domain_name, right_domain_name, left_index, right_index, left_path_array, right_path_array, left_dir, right_dir))
+        return true

@@ -1,0 +1,5 @@
+from "../LabelExtraction.zok" import extractDoTReverse, extractDoT
+from "../Util.zok" import myreverse
+
+def main(u8[255] dns_message, u8 offset) -> u8[255]:
+    return myreverse(dns_message, offset)

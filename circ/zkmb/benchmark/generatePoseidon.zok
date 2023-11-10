@@ -1,0 +1,4 @@
+from "../../third_party/ZoKrates/zokrates_stdlib/stdlib/hashes/poseidon/poseidon.zok" import generate_poseidon
+
+def main(field[8] fields) -> field:
+    return generate_poseidon(fields)

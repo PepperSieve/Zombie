@@ -1,0 +1,14 @@
+[req]
+default_bits = 2048
+prompt = no
+encrypt_key = no
+distinguished_name = dn
+
+[dn]
+C = US
+ST = State
+L = City
+O = Organization
+OU = Organizational Unit
+emailAddress = your_email@example.com
+CN = localhost

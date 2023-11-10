@@ -1,0 +1,35 @@
+-- Internal, if grammar is changed, recompile with
+-- bnfc --cpp -m -o regex-cpp regex.cf
+-- then run make -C regex-cpp
+-- if on mac, ensure export PATH="$(brew --prefix bison)/bin:$PATH"
+-- then update files accordingly
+-- Take a list of regexes (split by & symbols)
+
+(:[]). [Reg] ::= Reg ;
+(:). [Reg] ::= Reg "&" [Reg] ;
+RReg. Reg ::= Exp ;
+
+EConcat. Exp ::= [Exp1] ;
+EUnion. Exp1 ::= [Exp2] ;
+_. Exp2 ::= Exp3 ;
+_. Exp3 ::= "(" Exp ")" ;
+
+[].  [Exp1] ::= ;
+(:). [Exp1] ::= Exp1 [Exp1] ;
+(:[]).  [Exp2] ::= Exp2;
+(:). [Exp2] ::= Exp2 "|" [Exp2] ;
+EStar. Exp3 ::= Exp3 "*" ;
+EMore. Exp3 ::= Exp3 "+" ;
+ERepe. Exp3 ::= Exp3 "?" ;
+EMult. Exp3 ::= Exp3 Rang ;
+EClas. Exp3 ::= "[" [Symb] "]" ;
+EAStr. Exp3 ::= [Symb] ;
+
+(:[]). [Symb] ::= Symb;
+(:). [Symb] ::= Symb [Symb] ;
+
+-- all unsafe characters are expressed as literal bytes
+token Symb (letter | digit | '.' | '-' | '^' | ('\\' 'x' (digit | ["abcdefABCDEF"]) (digit | ["abcdefABCDEF"]))) ;
+-- lazy range expression (parsed outside compiler)
+token Rang '{' ((digit)+ | ((digit)* ',' (digit)*) ) '}'  ;
+

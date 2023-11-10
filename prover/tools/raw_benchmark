@@ -1,0 +1,240 @@
+## Benchmark
+
+### Dot ChaCha Spartan
+
+#### Channel Opening
+
+INFO:root:Spartan DotChannelOPenProver Report
+INFO:root:transcript generation time 0.014896631240844727
+INFO:root:assignment generation time 0.7762424945831299
+Evaluation Time 0.320
+write Buffer Time 0.405
+INFO:root:assignment preprocess time 3.8001210689544678
+INFO:root:proof generation time 1.9483287334442139
+INFO:root:total time 6.539588928222656
+INFO:root:verify time 0.1763014793395996
+
+| Name                       | Time  |
+| ----                       | ----  |
+| `prover`                   |       |
+| transcript generation time | 0.015 |
+| assignment generation time | 0.776 |
+| - circuit evaluation time  | 0.320 |
+| - write to buffer time     | 0.405 |
+| - network cost             | 0.051 |
+| assignment preprocess time | 3.800 |
+| proof generation time      | 1.948 |
+| prover total time          | 6.540 |
+| `prover overhead`          |       |
+| prover intrinsic time      | 2.283 |
+| prover overhead            | 4.256 |
+| `verifier`                 |       |
+|verifier total time         | 0.17630 |
+
+#### Amortized Dot Request
+
+INFO:root:Spartan DotChaChaProver Report
+INFO:root:transcript generation time 0.17328763008117676
+INFO:root:assignment generation time 0.32012343406677246
+Evaluation Time 0.082
+write Buffer Time 0.210
+INFO:root:assignment preprocess time 0.5831739902496338
+INFO:root:proof generation time 0.32700443267822266
+INFO:root:total time 1.4035894870758057
+INFO:root:verify time 0.047075510025024414
+
+| Name                       | Time  |
+| ----                       | ----  |
+| `prover`                   |       |
+| transcript generation time | 0.173 |
+| assignment generation time | 0.320 |
+| - circuit evaluation time  | 0.082 |
+| - write to buffer time     | 0.210 |
+| - network cost             | 0.028 |
+| assignment preprocess time | 0.583 |
+| proof generation time      | 0.327 |
+| prover total time          | 1.404 |
+| `prover overhead`          |       |
+| prover intrinsic time      | 0.582 |
+| prover overhead            | 0.821 |
+| `verifier`                 |       |
+|verifier total time         | 0.04708 |
+
+
+### Dot ChaCha Groth16
+
+#### Channel Opening
+
+INFO:root:Groth16 DotChannelOPenProver Report
+INFO:root:transcript generation time 0.015360355377197266
+INFO:root:assignment generation time 0.7089841365814209
+Evaluation Time 0.250
+write Buffer Time 0.409
+INFO:root:assignment preprocess time 3.4946343898773193
+INFO:root:proof generation time 8.155322790145874
+INFO:root:total time 12.374301671981812
+INFO:root:verify time 0.0014102458953857422
+
+| Name                       | Time  |
+| ----                       | ----  |
+| `prover`                   |       |
+| transcript generation time | 0.015 |
+| assignment generation time | 0.709 |
+| - circuit evaluation time  | 0.250 |
+| - write to buffer time     | 0.409 |
+| - network cost             | 0.050 |
+| assignment preprocess time | 3.495 |
+| proof generation time      | 8.155 |
+| prover total time          | 12.374 |
+| `prover overhead`          |       |
+| prover intrinsic time      | 8.421 |
+| prover overhead            | 3.954 |
+| `verifier`                 |       |
+|verifier total time         | 0.00141 |
+
+#### Amortized Dot Request
+
+INFO:root:Groth16 DotChaChaProver Report
+INFO:root:transcript generation time 0.17507433891296387
+INFO:root:assignment generation time 0.4709165096282959
+Evaluation Time 0.106
+write Buffer Time 0.329
+INFO:root:assignment preprocess time 0.5322561264038086
+INFO:root:proof generation time 1.1798720359802246
+INFO:root:total time 2.358119010925293
+INFO:root:verify time 0.0017406940460205078
+
+| Name                       | Time  |
+| ----                       | ----  |
+| `prover`                   |       |
+| transcript generation time | 0.175 |
+| assignment generation time | 0.471 |
+| - circuit evaluation time  | 0.106 |
+| - write to buffer time     | 0.329 |
+| - network cost             | 0.036 |
+| assignment preprocess time | 0.532 |
+| proof generation time      | 1.180 |
+| prover total time          | 2.358 |
+| `prover overhead`          |       |
+| prover intrinsic time      | 1.461 |
+| prover overhead            | 0.897 |
+| `verifier`                 |       |
+|verifier total time         | 0.00174 |
+
+### Doh AES Spartan
+
+#### Channel Opening
+
+INFO:root:transcript generation time 0.14020776748657227
+INFO:root:assignment generation time 1.9878599643707275
+Evaluation Time  0.412
+write Buffer Time  1.344
+INFO:root:assignment preprocess time 4.24132227897644
+INFO:root:proof generation time 1.9652774333953857
+INFO:root:total time 8.334667444229126
+INFO:root:verify time 0.17233610153198242
+
+| Name                       | Time  |
+| ----                       | ----  |
+| `prover`                   |       |
+| transcript generation time | 0.140 |
+| assignment generation time | 1.988 |
+| - circuit evaluation time  | 0.412 |
+| - write to buffer time     | 1.344 |
+| - network cost             | 0.232 |
+| assignment preprocess time | 4.241 |
+| proof generation time      | 1.965 |
+| prover total time          | 8.335 |
+| `prover overhead`          |       |
+| prover intrinsic time      | 2.517 |
+| prover overhead            | 5.817 |
+| `verifier`                 |       |
+|verifier total time         | 0.17234 |
+
+#### Amortized Doh Request
+
+INFO:root:transcript generation time 0.17376327514648438
+INFO:root:assignment generation time 4.538200855255127
+Evaluation Time  0.492
+write Buffer Time 3.355
+INFO:root:assignment preprocess time 2.707421064376831
+INFO:root:proof generation time 0.7893433570861816
+INFO:root:total time 8.208728551864624
+INFO:root:verify time 0.0779256820678711
+
+| Name                       | Time  |
+| ----                       | ----  |
+| `prover`                   |       |
+| transcript generation time | 0.174 |
+| assignment generation time | 4.538 |
+| - circuit evaluation time  | 0.492 |
+| - write to buffer time     | 3.355 |
+| - network cost             | 0.691 |
+| assignment preprocess time | 2.707 |
+| proof generation time      | 0.789 |
+| prover total time          | 8.209 |
+| `prover overhead`          |       |
+| prover intrinsic time      | 1.455 |
+| prover overhead            | 6.754 |
+| `verifier`                 |       |
+|verifier total time         | 0.07793 |
+
+### Doh AES Groth16
+
+#### Channel Opening
+
+INFO:root:Groth16 DotChannelOpenProver Report
+INFO:root:transcript generation time 0.13640332221984863
+INFO:root:assignment generation time 1.9664349555969238
+Evaluation Time  0.424
+write Buffer Time 1.337
+INFO:root:assignment preprocess time 3.8825690746307373
+INFO:root:proof generation time 8.11338210105896
+INFO:root:total time 14.09878945350647
+INFO:root:verify time 0.002881765365600586
+
+| Name                       | Time  |
+| ----                       | ----  |
+| `prover`                   |       |
+| transcript generation time | 0.136 |
+| assignment generation time | 1.966 |
+| - circuit evaluation time  | 0.424 |
+| - write to buffer time     | 1.337 |
+| - network cost             | 0.205 |
+| assignment preprocess time | 3.883 |
+| proof generation time      | 8.113 |
+| prover total time          | 14.099 |
+| `prover overhead`          |       |
+| prover intrinsic time      | 8.674 |
+| prover overhead            | 5.425 |
+| `verifier`                 |       |
+|verifier total time         | 0.00288 |
+
+#### Amortized Doh Request
+
+INFO:root:Groth16 DohAESProver Report
+INFO:root:transcript generation time 0.1743488311767578
+INFO:root:assignment generation time 4.776968479156494
+Evaluation Time  0.722
+write Buffer Time 3.459
+INFO:root:assignment preprocess time 2.6381402015686035
+INFO:root:proof generation time 2.3225109577178955
+INFO:root:total time 9.911968469619751
+INFO:root:verify time 0.004124879837036133
+
+| Name                       | Time  |
+| ----                       | ----  |
+| `prover`                   |       |
+| transcript generation time | 0.174 |
+| assignment generation time | 4.777 |
+| - circuit evaluation time  | 0.722 |
+| - write to buffer time     | 3.459 |
+| - network cost             | 0.596 |
+| assignment preprocess time | 2.638 |
+| proof generation time      | 2.323 |
+| prover total time          | 9.912 |
+| `prover overhead`          |       |
+| prover intrinsic time      | 3.219 |
+| prover overhead            | 6.693 |
+| `verifier`                 |       |
+|verifier total time         | 0.00412 |

@@ -1,0 +1,58 @@
+from "../third_party/ZoKrates/zokrates_stdlib/stdlib/hashes/poseidon/poseidon.zok" import generate_poseidon
+from "ChaCha.zok" import chachaEncrypt
+from "Util.zok" import xor_field, field_to_u8_array, pack_u8_arr, u32_to_four_u8, compare_field, unpack256, u8_from_bits
+from "LabelExtraction.zok" import extractDoHGETReverse
+from "./membership_merkle/non_membership.zok" import check_wildcard_python_path
+
+const u32 PAD_LEN = 500
+
+const u32 NUM_FIELDS = 17 // ceil(500/31)
+const u32 REMAINDER = 4 // 500 % 31
+
+
+// Constraints: totally about 8979 constraints 
+// with the biggest costs coming from the Poseidon hashes and first unpack loop
+def main(private u8[32] key, private u8[12] nonce, field comm, u32 SN, field[NUM_FIELDS] packed_pad, field comm_pad) ->  u8[PAD_LEN]:
+        field key_field = pack_u8_arr(key)
+        field nonce_field = pack_u8_arr(nonce)
+        field comm_cal = generate_poseidon([key_field, nonce_field])
+
+        bool ok = true
+        ok = (comm == comm_cal)
+
+        // Constraints: 4077 
+        field comm_pad_calc = 0f
+        for u32 i in 0..NUM_FIELDS do 
+            comm_pad_calc = generate_poseidon([comm_pad_calc, packed_pad[i]])
+        endfor 
+
+        // Constraints: 8755 so far (so ~4700 for just this loop)
+        bool[NUM_FIELDS][256] bool_matrix = [[false; 256]; NUM_FIELDS]
+        for u32 i in 0..NUM_FIELDS do
+            bool_matrix[i] = unpack256(packed_pad[i])
+        endfor
+
+        // Constraints: this for loop is almost free
+        u8[NUM_FIELDS][31] byte_matrix = [[0; 31]; NUM_FIELDS]  // 8 * 31 = 248
+        for u32 i in 0..NUM_FIELDS do
+            for u32 j in 0..31 do 
+                byte_matrix[i][j] = u8_from_bits([bool_matrix[i][j*8], bool_matrix[i][j*8+1], 
+                    bool_matrix[i][j*8+2], bool_matrix[i][j*8+3], bool_matrix[i][j*8+4], 
+                    bool_matrix[i][j*8+5], bool_matrix[i][j*8+6], bool_matrix[i][j*8+7]])
+            endfor 
+        endfor  
+
+
+        // Constraints: almost free
+        u8[PAD_LEN] pad = [0; PAD_LEN]
+        for u32 i in 0..(NUM_FIELDS-1) do 
+            for u32 j in 0..31 do 
+                pad[i*(NUM_FIELDS-1)+j] = byte_matrix[i][j]
+            endfor 
+        endfor 
+
+        for u32 i in 0..REMAINDER do
+            pad[(NUM_FIELDS-1)*31 + i] = byte_matrix[(NUM_FIELDS-1)][i]
+        endfor 
+        
+        return pad

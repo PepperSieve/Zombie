@@ -1,0 +1,128 @@
+from "Util.zok" import u32_to_four_u8, four_u8_to_u32, rev_bytes_32, xor_arrays, array_u8_to_u32, array_u32_to_u8, shift, u32_to_u8
+
+def ROTL<DIST>(u32 x) -> u32:
+    return (x << DIST) | (x >> (32 - DIST))
+
+def quarter_round(u32[4][4] state, u8 ind1, u8 ind2, u8 ind3, u8 ind4) -> u32[4][4]:
+    u32 a = state[ind1 / 4][ind1 % 4]
+    u32 b = state[ind2 / 4][ind2 % 4]
+    u32 c = state[ind3 / 4][ind3 % 4]
+    u32 d = state[ind4 / 4][ind4 % 4]
+
+    a = a + b
+    d = d ^ a
+    d = ROTL::<16>(d)
+
+    c = c + d
+    b = b ^ c
+    b = ROTL::<12>(b)
+
+    a = a + b
+    d = d ^ a
+    d = ROTL::<8>(d)
+
+    c = c + d
+    b = b ^ c
+    b = ROTL::<7>(b)
+
+    state[ind1 / 4][ind1 % 4] = a
+    state[ind2 / 4][ind2 % 4] = b
+    state[ind3 / 4][ind3 % 4] = c
+    state[ind4 / 4][ind4 % 4] = d
+    return state
+
+def chacha20block32(u32[8] key, u32[3] nonce, u32 count) -> u32[16]:
+    u32[16] keystream  = [0; 16] 
+
+    u32[4][4] state = [[0; 4]; 4]
+    state[0][0] = 0x61707865
+    state[0][1] = 0x3320646e
+    state[0][2] = 0x79622d32
+    state[0][3] = 0x6b206574
+    for u32 i in 1..3 do
+        for u32 j in 0..4 do
+            state[i][j] = rev_bytes_32(key[4 * (i - 1) + j])
+        endfor
+    endfor
+    state[3][0] = count
+
+    for u32 j in 0..3 do
+        state[3][j + 1] = rev_bytes_32(nonce[j])
+    endfor
+
+    u32[4][4] INIT_state = state
+
+    for u32 i in 0..10 do
+        state = quarter_round(state, 0, 4, 8, 12)
+        state = quarter_round(state, 1, 5, 9, 13)
+        state = quarter_round(state, 2, 6, 10, 14)
+        state = quarter_round(state, 3, 7, 11, 15)
+
+        state = quarter_round(state, 0, 5, 10, 15)
+        state = quarter_round(state, 1, 6, 11, 12)
+        state = quarter_round(state, 2, 7, 8, 13)
+        state = quarter_round(state, 3, 4, 9, 14)
+    endfor
+
+    for u32 i in 0..4 do
+        for u32 j in 0..4 do
+            keystream[4 * i + j] = state[i][j] + INIT_state[i][j]
+        endfor
+    endfor
+
+    for u32 i in 0..4 do
+        for u32 j in 0..4 do
+            keystream[4 * i + j] = rev_bytes_32(keystream[4 * i + j])
+        endfor
+    endfor  
+
+    return keystream
+
+def chacha20block(u8[32] key, u8[12] nonce, u32 count) -> u8[64]:
+    u32[8] key32 = array_u8_to_u32::<32, 8>(key)
+    u32[3] nonce32 = array_u8_to_u32::<12, 3>(nonce)
+    return array_u32_to_u8::<16, 64>(chacha20block32(key32, nonce32, count))
+
+// TODO: What is counter used for here?
+def chachaEncrypt<MSG_LEN>(u8[32] key, u8[12] nonce, u8[MSG_LEN] msg, u32 counter) -> u8[MSG_LEN]:
+    u8[-(-MSG_LEN / 64) * 64] full_stream = [0; -(-MSG_LEN / 64) * 64]
+
+    // one ChaCha block is 512 bits = 64 bytes 
+    for u32 i in 0..(MSG_LEN / 64 + 1) do
+        u8[64] block_stream = chacha20block(key, nonce, i + counter)
+        for u32 j in 0..64 do
+            full_stream[64 * i + j] = block_stream[j]
+        endfor 
+    endfor
+
+    return xor_arrays(msg, full_stream)
+
+def chacha_decrypt_128bytes_middle(u8[32] key, u8[12] nonce, u8[128] ciphertext, u32 starting_block, u32 offset) -> u8[128]:
+    u8[192] full_stream = [0; 192]
+    for u32 i in 0..3 do
+      u8[64] block_stream = chacha20block(key, nonce, starting_block + i + 1)
+      for u32 j in 0..64 do
+        full_stream[i * 64 + j] = block_stream[j]
+      endfor
+    endfor
+    u8[128] pad_offset = [0; 128]
+    u8[192] shifted_full_stream = shift(full_stream, u32_to_u8(offset))
+    for u32 i in 0..128 do
+      pad_offset[i] = shifted_full_stream[i]
+    endfor
+    return xor_arrays(ciphertext, pad_offset)
+
+// def main(u32 x) -> bool:
+//     u8[32] key = [61, 186, 53, 153, 12, 58, 4, 1, 80, 128, 185, 140, 182, 118, 216, 154, 42, 242, 52, 3, 69, 207, 178, 74, 71, 109, 123, 30, 99, 61, 234, 187]
+//     u8[12] iv = [216, 247, 232, 104, 34, 33, 214, 207, 234, 2, 5, 190]
+//     u8[255] msg = [160, 1, 80, 174, 221, 140, 55, 46, 155, 108, 15, 222, 154, 198, 160, 77, 198, 26, 65, 29, 26, 85, 131, 57, 225, 190, 113, 55, 146, 108, 171, 212, 174, 118, 24, 35, 252, 188, 183, 198, 93, 235, 201, 159, 132, 106, 61, 189, 20, 213, 212, 238, 87, 130, 235, 94, 63, 115, 105, 164, 2, 180, 6, 83, 110, 250, 84, 96, 57, 11, 106, 23, 96, 176, 185, 17, 81, 13, 41, 249, 235, 105, 141, 62, 201, 86, 12, 164, 177, 255, 183, 172, 183, 184, 95, 225, 41, 210, 181, 104, 35, 32, 193, 54, 57, 146, 102, 165, 188, 221, 120, 150, 74, 19, 98, 47, 180, 164, 104, 245, 250, 8, 28, 139, 212, 222, 64, 151, 126, 208, 36, 88, 88, 210, 89, 37, 0, 155, 94, 60, 6, 174, 31, 220, 133, 54, 33, 237, 34, 18, 58, 255, 211, 219, 60, 79, 238, 125, 117, 159, 26, 241, 236, 77, 221, 237, 223, 9, 255, 44, 142, 119, 53, 35, 212, 209, 254, 136, 168, 53, 242, 182, 151, 70, 42, 54, 52, 177, 212, 122, 139, 52, 137, 127, 190, 126, 73, 144, 110, 100, 106, 141, 48, 89, 235, 228, 207, 210, 194, 173, 9, 188, 20, 78, 5, 252, 187, 27, 108, 76, 17, 181, 91, 32, 108, 220, 203, 148, 35, 28, 181, 185, 130, 113, 62, 74, 188, 183, 79, 214, 247, 202, 132, 247, 59, 165, 184, 99, 23, 197, 20, 86, 217, 81, 216]
+//     u8[255] expected_result = [51, 9, 116, 4, 123, 127, 45, 143, 64, 204, 110, 170, 151, 196, 231, 134, 30, 221, 121, 243, 225, 162, 254, 53, 96, 227, 133, 200, 21, 64, 135, 208, 199, 236, 66, 215, 75, 18, 151, 103, 9, 129, 87, 209, 235, 94, 100, 13, 65, 48, 148, 192, 169, 208, 157, 1, 6, 107, 30, 86, 201, 60, 228, 135, 149, 10, 200, 161, 159, 115, 157, 25, 26, 112, 53, 212, 102, 33, 81, 212, 240, 95, 114, 130, 183, 223, 94, 191, 193, 231, 159, 29, 10, 247, 54, 144, 34, 155, 219, 145, 123, 245, 129, 170, 82, 12, 56, 136, 107, 100, 20, 250, 114, 49, 165, 163, 98, 92, 57, 127, 187, 1, 183, 114, 250, 8, 103, 85, 71, 89, 9, 220, 147, 86, 84, 135, 73, 174, 82, 46, 236, 70, 157, 230, 159, 168, 92, 70, 110, 205, 156, 165, 55, 135, 20, 43, 131, 132, 112, 143, 166, 225, 234, 79, 219, 77, 152, 185, 13, 87, 254, 213, 213, 82, 206, 141, 202, 145, 233, 223, 211, 234, 34, 177, 14, 54, 50, 164, 129, 225, 200, 70, 239, 137, 49, 219, 167, 4, 45, 237, 5, 197, 197, 250, 172, 53, 149, 122, 92, 200, 38, 115, 194, 231, 82, 202, 89, 210, 235, 61, 41, 16, 248, 148, 161, 254, 224, 252, 100, 76, 141, 168, 28, 108, 147, 246, 95, 177, 150, 221, 88, 128, 190, 104, 49, 7, 113, 39, 50, 101, 20, 151, 51, 153, 4]
+//     u8[255] encrypted_msg = chachaEncrypt(key, iv, msg, 1)
+//     bool ok = true
+//     for u32 i in 0..255 do
+//         ok = ok && (expected_result[i] == encrypted_msg[i])
+//     endfor
+//     return ok
+
+def main(u8[32] key, u8[12] iv, u8[1000] msg) -> u8[1000]:
+    return chachaEncrypt(key, iv, msg, 1)

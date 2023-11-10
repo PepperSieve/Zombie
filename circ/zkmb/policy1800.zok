@@ -1,0 +1,638 @@
+
+const u32 STR_LENGTH = 1800
+const u32 PROXY_DIST = 300
+
+def isZero(field x) -> field:
+	field y = if x == 0 then 1 else 0 fi
+	return y
+
+def isNotZero(field x) -> field:
+	field y = if x != 0 then 1 else 0 fi
+	return y
+
+def inRange(u8 x, u8 l, u8 h) -> field:
+	field y = if l <= x && x <= h then 1 else 0 fi
+	return y
+
+def spread(field[STR_LENGTH] x) -> field[STR_LENGTH]:
+	field[STR_LENGTH] y = [0;STR_LENGTH]
+	for u32 i in PROXY_DIST..(STR_LENGTH-PROXY_DIST) do
+		field sum = 0
+		for u32 j in (i-PROXY_DIST)..(i+PROXY_DIST) do
+			sum = sum + x[j]
+		endfor
+		y[i] = sum
+	endfor
+	return y
+
+def procCheck(field[STR_LENGTH] l, field[STR_LENGTH] r) -> bool:
+	field[STR_LENGTH] ls = spread(l)
+	for u32 i in 0..STR_LENGTH do
+		assert(ls[i] * r[i] == 0)
+	endfor
+	return true
+
+def parseExtract(field[STR_LENGTH] s) -> field[STR_LENGTH]:
+	field[STR_LENGTH] ls = [0; STR_LENGTH]
+	for u32 i in 4..STR_LENGTH do
+		ls[i] = ls[i - 1] + isZero((s[i - 4] - 13) + 256 * (s[i - 3] - 10) + 65536 * (s[i - 2] - 13) + 16777216 * (s[i - 1] - 10))
+	endfor
+	return ls
+
+def main(field[STR_LENGTH] t, u8[STR_LENGTH] tu) -> bool:
+	field[STR_LENGTH] start = parseExtract(t)
+	field accum = 0
+	field[STR_LENGTH] p_17 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		p_17[i] = isZero((t[i - 0] - 32))
+	endfor
+	field[STR_LENGTH] p_12 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		p_12[i] = isZero((t[i - 1] - 32) + (t[i - 0] - 35) * 256)
+	endfor
+	field[STR_LENGTH] p_45 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		p_45[i] = isZero((t[i - 1] - 32) + (t[i - 0] - 46) * 256)
+	endfor
+	field[STR_LENGTH] p_11 = [0; STR_LENGTH]
+	for u32 i in 3..STR_LENGTH do
+		p_11[i] = isZero((t[i - 3] - 32) + (t[i - 2] - 78) * 256 + (t[i - 1] - 111) * 65536 + (t[i - 0] - 46) * 16777216)
+	endfor
+	field[STR_LENGTH] p_10 = [0; STR_LENGTH]
+	for u32 i in 6..STR_LENGTH do
+		p_10[i] = isZero((t[i - 6] - 32) + (t[i - 5] - 78) * 256 + (t[i - 4] - 117) * 65536 + (t[i - 3] - 109) * 16777216 + (t[i - 2] - 98) * 4294967296 + (t[i - 1] - 101) * 1099511627776 + (t[i - 0] - 114) * 281474976710656)
+	endfor
+	field[STR_LENGTH] p_46 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		p_46[i] = isZero((t[i - 2] - 32) + (t[i - 1] - 110) * 256 + (t[i - 0] - 111) * 65536)
+	endfor
+	field[STR_LENGTH] p_44 = [0; STR_LENGTH]
+	for u32 i in 6..STR_LENGTH do
+		p_44[i] = isZero((t[i - 6] - 32) + (t[i - 5] - 110) * 256 + (t[i - 4] - 117) * 65536 + (t[i - 3] - 109) * 16777216 + (t[i - 2] - 98) * 4294967296 + (t[i - 1] - 101) * 1099511627776 + (t[i - 0] - 114) * 281474976710656)
+	endfor
+	field[STR_LENGTH] t_0 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		t_0[i] = isZero((t[i] - 32) * (t[i] - 45))
+	endfor
+	field[STR_LENGTH] p_28 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		p_28[i] = 1 - t_0[i]
+	endfor
+	field[STR_LENGTH] p_23 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		p_23[i] = isZero((t[i - 0] - 35))
+	endfor
+	field[STR_LENGTH] p_15 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		p_15[i] = isZero((t[i - 0] - 39))
+	endfor
+	field[STR_LENGTH] p_47 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		p_47[i] = isZero((t[i - 0] - 46))
+	endfor
+	field[STR_LENGTH] t_1 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		t_1[i] = isZero((t[i] - 48) * (t[i] - 49) * (t[i] - 50) * (t[i] - 51) * (t[i] - 52) * (t[i] - 53))
+	endfor
+	field[STR_LENGTH] p_31 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		p_31[i] = 1 - t_1[i]
+	endfor
+	field[STR_LENGTH] t_2 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		t_2[i] = isZero((t[i] - 48) * (t[i] - 49) * (t[i] - 50) * (t[i] - 51) * (t[i] - 52) * (t[i] - 53) * (t[i] - 54) * (t[i] - 55) * (t[i] - 56))
+	endfor
+	field[STR_LENGTH] t_3 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		t_3[i] = isZero((t[i] - 48) * (t[i] - 49) * (t[i] - 50) * (t[i] - 52) * (t[i] - 53) * (t[i] - 54) * (t[i] - 55) * (t[i] - 56) * (t[i] - 57))
+	endfor
+	field[STR_LENGTH] p_33 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		p_33[i] = isZero((1 - t_2[i - 1]) + (1 - t_3[i - 0]) * 2)
+	endfor
+	field[STR_LENGTH] t_4 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		t_4[i] = isZero((t[i] - 48) * (t[i] - 49) * (t[i] - 50) * (t[i] - 51) * (t[i] - 52) * (t[i] - 53) * (t[i] - 54) * (t[i] - 55) * (t[i] - 56) * (t[i] - 57))
+	endfor
+	field[STR_LENGTH] p_1 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		p_1[i] = 1 - t_4[i]
+	endfor
+	field[STR_LENGTH] p_2 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		p_2[i] = isZero((1 - t_4[i - 1]) + (1 - t_4[i - 0]) * 2)
+	endfor
+	field[STR_LENGTH] p_13 = [0; STR_LENGTH]
+	for u32 i in 10..STR_LENGTH do
+		p_13[i] = isZero((1 - t_4[i - 10]) + (1 - t_4[i - 9]) * 2 + (1 - t_4[i - 8]) * 4 + (t[i - 7] - 32) * 8 + (1 - t_4[i - 6]) * 2048 + (1 - t_4[i - 5]) * 4096 + (1 - t_4[i - 4]) * 8192 + (t[i - 3] - 32) * 16384 + (1 - t_4[i - 2]) * 4194304 + (1 - t_4[i - 1]) * 8388608 + (1 - t_4[i - 0]) * 16777216)
+	endfor
+	field[STR_LENGTH] p_42 = [0; STR_LENGTH]
+	for u32 i in 10..STR_LENGTH do
+		p_42[i] = isZero((1 - t_4[i - 10]) + (1 - t_4[i - 9]) * 2 + (1 - t_4[i - 8]) * 4 + (t[i - 7] - 45) * 8 + (1 - t_4[i - 6]) * 2048 + (1 - t_4[i - 5]) * 4096 + (t[i - 4] - 45) * 8192 + (1 - t_4[i - 3]) * 2097152 + (1 - t_4[i - 2]) * 4194304 + (1 - t_4[i - 1]) * 8388608 + (1 - t_4[i - 0]) * 16777216)
+	endfor
+	field[STR_LENGTH] p_3 = [0; STR_LENGTH]
+	for u32 i in 3..STR_LENGTH do
+		p_3[i] = isZero((1 - t_4[i - 3]) + (1 - t_4[i - 2]) * 2 + (1 - t_4[i - 1]) * 4 + (1 - t_4[i - 0]) * 8)
+	endfor
+	field[STR_LENGTH] p_0 = [0; STR_LENGTH]
+	for u32 i in 5..STR_LENGTH do
+		p_0[i] = isZero((1 - t_4[i - 5]) + (1 - t_4[i - 4]) * 2 + (1 - t_4[i - 3]) * 4 + (1 - t_4[i - 2]) * 8 + (1 - t_4[i - 1]) * 16 + (1 - t_4[i - 0]) * 32)
+	endfor
+	field[STR_LENGTH] t_5 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		t_5[i] = (inRange(tu[i], 65, 122) + isZero((t[i] - 48) * (t[i] - 49) * (t[i] - 50) * (t[i] - 51) * (t[i] - 52) * (t[i] - 53) * (t[i] - 54) * (t[i] - 55) * (t[i] - 56) * (t[i] - 57))) * isZero((isZero((t[i] - 91) * (t[i] - 92) * (t[i] - 93) * (t[i] - 94) * (t[i] - 95) * (t[i] - 96))))
+	endfor
+	field[STR_LENGTH] p_52 = [0; STR_LENGTH]
+	for u32 i in 8..STR_LENGTH do
+		p_52[i] = isZero((1 - t_5[i - 8]) + (1 - t_4[i - 7]) * 2 + (1 - t_4[i - 6]) * 4 + (1 - t_4[i - 5]) * 8 + (1 - t_4[i - 4]) * 16 + (1 - t_4[i - 3]) * 32 + (1 - t_4[i - 2]) * 64 + (1 - t_4[i - 1]) * 128 + (1 - t_4[i - 0]) * 256)
+	endfor
+	field[STR_LENGTH] t_6 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		t_6[i] = isZero((t[i] - 53) * (t[i] - 55))
+	endfor
+	field[STR_LENGTH] p_29 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		p_29[i] = isZero((1 - t_6[i - 1]) + (1 - t_4[i - 0]) * 2)
+	endfor
+	field[STR_LENGTH] p_30 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		p_30[i] = isZero((1 - t_6[i - 1]) + (t[i - 0] - 54) * 2)
+	endfor
+	field[STR_LENGTH] p_32 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		p_32[i] = isZero((t[i - 0] - 56))
+	endfor
+	field[STR_LENGTH] p_27 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		p_27[i] = isZero((t[i - 2] - 57) + (1 - t_4[i - 1]) * 256 + (1 - t_4[i - 0]) * 512)
+	endfor
+	field[STR_LENGTH] p_34 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		p_34[i] = isZero((t[i - 1] - 57) + (1 - t_3[i - 0]) * 256)
+	endfor
+	field[STR_LENGTH] p_8 = [0; STR_LENGTH]
+	for u32 i in 6..STR_LENGTH do
+		p_8[i] = isZero((t[i - 6] - 65) + (t[i - 5] - 99) * 256 + (t[i - 4] - 99) * 65536 + (t[i - 3] - 111) * 16777216 + (t[i - 2] - 117) * 4294967296 + (t[i - 1] - 110) * 1099511627776 + (t[i - 0] - 116) * 281474976710656)
+	endfor
+	field[STR_LENGTH] p_9 = [0; STR_LENGTH]
+	for u32 i in 3..STR_LENGTH do
+		p_9[i] = isZero((t[i - 3] - 65) + (t[i - 2] - 99) * 256 + (t[i - 1] - 99) * 65536 + (t[i - 0] - 116) * 16777216)
+	endfor
+	field[STR_LENGTH] p_5 = [0; STR_LENGTH]
+	for u32 i in 4..STR_LENGTH do
+		p_5[i] = isZero((t[i - 4] - 66) + (t[i - 3] - 97) * 256 + (t[i - 2] - 110) * 65536 + (t[i - 1] - 107) * 16777216 + (t[i - 0] - 32) * 4294967296)
+	endfor
+	field[STR_LENGTH] p_4 = [0; STR_LENGTH]
+	for u32 i in 8..STR_LENGTH do
+		p_4[i] = isZero((t[i - 8] - 67) + (t[i - 7] - 104) * 256 + (t[i - 6] - 101) * 65536 + (t[i - 5] - 99) * 16777216 + (t[i - 4] - 107) * 4294967296 + (t[i - 3] - 105) * 1099511627776 + (t[i - 2] - 110) * 281474976710656 + (t[i - 1] - 103) * 72057594037927936 + (t[i - 0] - 32) * 18446744073709551616)
+	endfor
+	field[STR_LENGTH] p_7 = [0; STR_LENGTH]
+	for u32 i in 5..STR_LENGTH do
+		p_7[i] = isZero((t[i - 5] - 68) + (t[i - 4] - 101) * 256 + (t[i - 3] - 98) * 65536 + (t[i - 2] - 105) * 16777216 + (t[i - 1] - 116) * 4294967296 + (t[i - 0] - 32) * 1099511627776)
+	endfor
+	field[STR_LENGTH] p_14 = [0; STR_LENGTH]
+	for u32 i in 5..STR_LENGTH do
+		p_14[i] = isZero((t[i - 5] - 68) + (t[i - 4] - 114) * 256 + (t[i - 3] - 105) * 65536 + (t[i - 2] - 118) * 16777216 + (t[i - 1] - 101) * 4294967296 + (t[i - 0] - 114) * 1099511627776)
+	endfor
+	field[STR_LENGTH] p_18 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		p_18[i] = isZero((t[i - 2] - 76) + (t[i - 1] - 105) * 256 + (t[i - 0] - 99) * 65536)
+	endfor
+	field[STR_LENGTH] p_50 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		p_50[i] = isZero((t[i - 0] - 78))
+	endfor
+	field[STR_LENGTH] p_25 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		p_25[i] = isZero((t[i - 1] - 78) + (t[i - 0] - 89) * 256)
+	endfor
+	field[STR_LENGTH] p_26 = [0; STR_LENGTH]
+	for u32 i in 7..STR_LENGTH do
+		p_26[i] = isZero((t[i - 7] - 78) + (t[i - 6] - 101) * 256 + (t[i - 5] - 119) * 65536 + (t[i - 4] - 32) * 16777216 + (t[i - 3] - 89) * 4294967296 + (t[i - 2] - 111) * 1099511627776 + (t[i - 1] - 114) * 281474976710656 + (t[i - 0] - 107) * 72057594037927936)
+	endfor
+	field[STR_LENGTH] p_49 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		p_49[i] = isZero((t[i - 1] - 83) + (t[i - 0] - 83) * 256)
+	endfor
+	field[STR_LENGTH] p_43 = [0; STR_LENGTH]
+	for u32 i in 9..STR_LENGTH do
+		p_43[i] = isZero((t[i - 9] - 83) + (t[i - 8] - 83) * 256 + (t[i - 7] - 65) * 65536 + (t[i - 6] - 32) * 16777216 + (t[i - 5] - 78) * 4294967296 + (t[i - 4] - 117) * 1099511627776 + (t[i - 3] - 109) * 281474976710656 + (t[i - 2] - 98) * 72057594037927936 + (t[i - 1] - 101) * 18446744073709551616 + (t[i - 0] - 114) * 4722366482869645213696)
+	endfor
+	field[STR_LENGTH] p_51 = [0; STR_LENGTH]
+	for u32 i in 3..STR_LENGTH do
+		p_51[i] = isZero((t[i - 3] - 83) + (t[i - 2] - 83) * 256 + (t[i - 1] - 73) * 65536 + (t[i - 0] - 68) * 16777216)
+	endfor
+	field[STR_LENGTH] p_6 = [0; STR_LENGTH]
+	for u32 i in 7..STR_LENGTH do
+		p_6[i] = isZero((t[i - 7] - 83) + (t[i - 6] - 97) * 256 + (t[i - 5] - 118) * 65536 + (t[i - 4] - 105) * 16777216 + (t[i - 3] - 110) * 4294967296 + (t[i - 2] - 103) * 1099511627776 + (t[i - 1] - 115) * 281474976710656 + (t[i - 0] - 32) * 72057594037927936)
+	endfor
+	field[STR_LENGTH] p_48 = [0; STR_LENGTH]
+	for u32 i in 6..STR_LENGTH do
+		p_48[i] = isZero((t[i - 6] - 83) + (t[i - 5] - 111) * 256 + (t[i - 4] - 99) * 65536 + (t[i - 3] - 32) * 16777216 + (t[i - 2] - 83) * 4294967296 + (t[i - 1] - 101) * 1099511627776 + (t[i - 0] - 99) * 281474976710656)
+	endfor
+	field[STR_LENGTH] p_53 = [0; STR_LENGTH]
+	for u32 i in 15..STR_LENGTH do
+		p_53[i] = isZero((t[i - 15] - 98) + (t[i - 14] - 114) * 256 + (t[i - 13] - 105) * 65536 + (t[i - 12] - 116) * 16777216 + (t[i - 11] - 105) * 4294967296 + (t[i - 10] - 115) * 1099511627776 + (t[i - 9] - 104) * 281474976710656 + (t[i - 8] - 32) * 72057594037927936 + (t[i - 7] - 112) * 18446744073709551616 + (t[i - 6] - 97) * 4722366482869645213696 + (t[i - 5] - 115) * 1208925819614629174706176 + (t[i - 4] - 115) * 309485009821345068724781056 + (t[i - 3] - 112) * 79228162514264337593543950336 + (t[i - 2] - 111) * 20282409603651670423947251286016 + (t[i - 1] - 114) * 5192296858534827628530496329220096 + (t[i - 0] - 116) * 1329227995784915872903807060280344576)
+	endfor
+	field[STR_LENGTH] p_24 = [0; STR_LENGTH]
+	for u32 i in 3..STR_LENGTH do
+		p_24[i] = isZero((t[i - 3] - 99) + (t[i - 2] - 97) * 256 + (t[i - 1] - 114) * 65536 + (t[i - 0] - 100) * 16777216)
+	endfor
+	field[STR_LENGTH] p_39 = [0; STR_LENGTH]
+	for u32 i in 7..STR_LENGTH do
+		p_39[i] = isZero((t[i - 7] - 105) + (t[i - 6] - 46) * 256 + (t[i - 5] - 116) * 65536 + (t[i - 4] - 46) * 16777216 + (t[i - 3] - 105) * 4294967296 + (t[i - 2] - 46) * 1099511627776 + (t[i - 1] - 110) * 281474976710656 + (t[i - 0] - 46) * 72057594037927936)
+	endfor
+	field[STR_LENGTH] p_37 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		p_37[i] = isZero((t[i - 1] - 105) + (t[i - 0] - 100) * 256)
+	endfor
+	field[STR_LENGTH] p_20 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		p_20[i] = isZero((t[i - 2] - 105) + (t[i - 1] - 100) * 256 + (t[i - 0] - 32) * 65536)
+	endfor
+	field[STR_LENGTH] p_19 = [0; STR_LENGTH]
+	for u32 i in 14..STR_LENGTH do
+		p_19[i] = isZero((t[i - 14] - 105) + (t[i - 13] - 100) * 256 + (t[i - 12] - 101) * 65536 + (t[i - 11] - 110) * 16777216 + (t[i - 10] - 116) * 4294967296 + (t[i - 9] - 105) * 1099511627776 + (t[i - 8] - 102) * 281474976710656 + (t[i - 7] - 105) * 72057594037927936 + (t[i - 6] - 99) * 18446744073709551616 + (t[i - 5] - 97) * 4722366482869645213696 + (t[i - 4] - 116) * 1208925819614629174706176 + (t[i - 3] - 105) * 309485009821345068724781056 + (t[i - 2] - 111) * 79228162514264337593543950336 + (t[i - 1] - 110) * 20282409603651670423947251286016 + (t[i - 0] - 32) * 5192296858534827628530496329220096)
+	endfor
+	field[STR_LENGTH] p_56 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		p_56[i] = isZero((t[i - 1] - 110) + (t[i - 0] - 111) * 256)
+	endfor
+	field[STR_LENGTH] p_21 = [0; STR_LENGTH]
+	for u32 i in 5..STR_LENGTH do
+		p_21[i] = isZero((t[i - 5] - 110) + (t[i - 4] - 117) * 256 + (t[i - 3] - 109) * 65536 + (t[i - 2] - 98) * 16777216 + (t[i - 1] - 101) * 4294967296 + (t[i - 0] - 114) * 1099511627776)
+	endfor
+	field[STR_LENGTH] p_22 = [0; STR_LENGTH]
+	for u32 i in 6..STR_LENGTH do
+		p_22[i] = isZero((t[i - 6] - 110) + (t[i - 5] - 117) * 256 + (t[i - 4] - 109) * 65536 + (t[i - 3] - 98) * 16777216 + (t[i - 2] - 101) * 4294967296 + (t[i - 1] - 114) * 1099511627776 + (t[i - 0] - 115) * 281474976710656)
+	endfor
+	field[STR_LENGTH] p_55 = [0; STR_LENGTH]
+	for u32 i in 7..STR_LENGTH do
+		p_55[i] = isZero((t[i - 7] - 112) + (t[i - 6] - 97) * 256 + (t[i - 5] - 115) * 65536 + (t[i - 4] - 115) * 16777216 + (t[i - 3] - 112) * 4294967296 + (t[i - 2] - 111) * 1099511627776 + (t[i - 1] - 114) * 281474976710656 + (t[i - 0] - 116) * 72057594037927936)
+	endfor
+	field[STR_LENGTH] p_36 = [0; STR_LENGTH]
+	for u32 i in 4..STR_LENGTH do
+		p_36[i] = isZero((t[i - 4] - 112) + (t[i - 3] - 97) * 256 + (t[i - 2] - 121) * 65536 + (t[i - 1] - 101) * 16777216 + (t[i - 0] - 114) * 4294967296)
+	endfor
+	field[STR_LENGTH] p_16 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		p_16[i] = isZero((t[i - 0] - 115))
+	endfor
+	field[STR_LENGTH] p_41 = [0; STR_LENGTH]
+	for u32 i in 14..STR_LENGTH do
+		p_41[i] = isZero((t[i - 14] - 115) + (t[i - 13] - 111) * 256 + (t[i - 12] - 99) * 65536 + (t[i - 11] - 105) * 16777216 + (t[i - 10] - 97) * 4294967296 + (t[i - 9] - 108) * 1099511627776 + (t[i - 8] - 32) * 281474976710656 + (t[i - 7] - 115) * 72057594037927936 + (t[i - 6] - 101) * 18446744073709551616 + (t[i - 5] - 99) * 4722366482869645213696 + (t[i - 4] - 117) * 1208925819614629174706176 + (t[i - 3] - 114) * 309485009821345068724781056 + (t[i - 2] - 105) * 79228162514264337593543950336 + (t[i - 1] - 116) * 20282409603651670423947251286016 + (t[i - 0] - 121) * 5192296858534827628530496329220096)
+	endfor
+	field[STR_LENGTH] p_40 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		p_40[i] = isZero((t[i - 2] - 115) + (t[i - 1] - 115) * 256 + (t[i - 0] - 110) * 65536)
+	endfor
+	field[STR_LENGTH] p_35 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		p_35[i] = isZero((t[i - 2] - 116) + (t[i - 1] - 97) * 256 + (t[i - 0] - 120) * 65536)
+	endfor
+	field[STR_LENGTH] p_38 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		p_38[i] = isZero((t[i - 2] - 116) + (t[i - 1] - 105) * 256 + (t[i - 0] - 110) * 65536)
+	endfor
+	field[STR_LENGTH] p_54 = [0; STR_LENGTH]
+	for u32 i in 10..STR_LENGTH do
+		p_54[i] = isZero((t[i - 10] - 117) + (t[i - 9] - 107) * 256 + (t[i - 8] - 32) * 65536 + (t[i - 7] - 112) * 16777216 + (t[i - 6] - 97) * 4294967296 + (t[i - 5] - 115) * 1099511627776 + (t[i - 4] - 115) * 281474976710656 + (t[i - 3] - 112) * 72057594037927936 + (t[i - 2] - 111) * 18446744073709551616 + (t[i - 1] - 114) * 4722366482869645213696 + (t[i - 0] - 116) * 1208925819614629174706176)
+	endfor
+	field[STR_LENGTH] s_0 = [0; STR_LENGTH]
+	for u32 i in 6..STR_LENGTH do
+		s_0[i] = p_0[i] * start[i - 6]
+	endfor
+	field[STR_LENGTH] s_1 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_1[i] = p_1[i] * (s_0[i - 1])
+	endfor
+	field[STR_LENGTH] s_3 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		s_3[i] = p_2[i] * (s_0[i - 2] + s_1[i - 2])
+	endfor
+	field[STR_LENGTH] s_5 = [0; STR_LENGTH]
+	for u32 i in 4..STR_LENGTH do
+		s_5[i] = p_3[i] * (s_0[i - 4] + s_1[i - 4] + s_3[i - 4])
+	endfor
+	field[STR_LENGTH] s_7 = [0; STR_LENGTH]
+	for u32 i in 4..STR_LENGTH do
+		s_7[i] = p_3[i] * (s_0[i - 4] + s_1[i - 4] + s_3[i - 4] + s_5[i - 4])
+	endfor
+	field[STR_LENGTH] f_8 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		f_8[i] = (s_0[i] + s_1[i] + s_3[i] + s_5[i] + s_7[i])
+	endfor
+	field[STR_LENGTH] s_9 = [0; STR_LENGTH]
+	for u32 i in 9..STR_LENGTH do
+		s_9[i] = p_4[i] * start[i - 9]
+	endfor
+	field[STR_LENGTH] s_10 = [0; STR_LENGTH]
+	for u32 i in 5..STR_LENGTH do
+		s_10[i] = p_5[i] * start[i - 5]
+	endfor
+	field[STR_LENGTH] s_11 = [0; STR_LENGTH]
+	for u32 i in 8..STR_LENGTH do
+		s_11[i] = p_6[i] * start[i - 8]
+	endfor
+	field[STR_LENGTH] s_12 = [0; STR_LENGTH]
+	for u32 i in 6..STR_LENGTH do
+		s_12[i] = p_7[i] * start[i - 6]
+	endfor
+	field[STR_LENGTH] s_14 = [0; STR_LENGTH]
+	for u32 i in 7..STR_LENGTH do
+		s_14[i] = p_8[i] * (s_9[i - 7] + s_10[i - 7] + s_11[i - 7] + s_12[i - 7])
+	endfor
+	field[STR_LENGTH] s_15 = [0; STR_LENGTH]
+	for u32 i in 4..STR_LENGTH do
+		s_15[i] = p_9[i] * (s_9[i - 4] + s_10[i - 4] + s_11[i - 4] + s_12[i - 4])
+	endfor
+	field[STR_LENGTH] s_17 = [0; STR_LENGTH]
+	for u32 i in 7..STR_LENGTH do
+		s_17[i] = p_10[i] * (s_14[i - 7] + s_15[i - 7])
+	endfor
+	field[STR_LENGTH] s_18 = [0; STR_LENGTH]
+	for u32 i in 4..STR_LENGTH do
+		s_18[i] = p_11[i] * (s_14[i - 4] + s_15[i - 4])
+	endfor
+	field[STR_LENGTH] s_19 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		s_19[i] = p_12[i] * (s_14[i - 2] + s_15[i - 2])
+	endfor
+	field[STR_LENGTH] f_21 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		f_21[i] = (s_14[i] + s_15[i] + s_17[i] + s_18[i] + s_19[i])
+		accum = accum + f_21[i]
+	endfor
+	field[STR_LENGTH] f_22 = [0; STR_LENGTH]
+	for u32 i in 11..STR_LENGTH do
+		f_22[i] = p_13[i] * start[i - 11]
+		accum = accum + f_22[i]
+	endfor
+	field[STR_LENGTH] s_23 = [0; STR_LENGTH]
+	for u32 i in 6..STR_LENGTH do
+		s_23[i] = p_14[i] * start[i - 6]
+	endfor
+	field[STR_LENGTH] s_24 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_24[i] = p_15[i] * (s_23[i - 1])
+	endfor
+	field[STR_LENGTH] s_26 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_26[i] = p_16[i] * (s_23[i - 1] + s_24[i - 1])
+	endfor
+	field[STR_LENGTH] s_28 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_28[i] = p_17[i] * (s_23[i - 1] + s_24[i - 1] + s_26[i - 1])
+	endfor
+	field[STR_LENGTH] s_30 = [0; STR_LENGTH]
+	for u32 i in 3..STR_LENGTH do
+		s_30[i] = p_18[i] * (s_23[i - 3] + s_24[i - 3] + s_26[i - 3] + s_28[i - 3])
+	endfor
+	field[STR_LENGTH] s_31 = [0; STR_LENGTH]
+	for u32 i in 15..STR_LENGTH do
+		s_31[i] = p_19[i] * start[i - 15]
+	endfor
+	field[STR_LENGTH] s_32 = [0; STR_LENGTH]
+	for u32 i in 3..STR_LENGTH do
+		s_32[i] = p_20[i] * start[i - 3]
+	endfor
+	field[STR_LENGTH] s_34 = [0; STR_LENGTH]
+	for u32 i in 6..STR_LENGTH do
+		s_34[i] = p_21[i] * (s_31[i - 6] + s_32[i - 6])
+	endfor
+	field[STR_LENGTH] s_35 = [0; STR_LENGTH]
+	for u32 i in 7..STR_LENGTH do
+		s_35[i] = p_22[i] * (s_31[i - 7] + s_32[i - 7])
+	endfor
+	field[STR_LENGTH] s_36 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_36[i] = p_23[i] * (s_31[i - 1] + s_32[i - 1])
+	endfor
+	field[STR_LENGTH] s_37 = [0; STR_LENGTH]
+	for u32 i in 4..STR_LENGTH do
+		s_37[i] = p_24[i] * (s_31[i - 4] + s_32[i - 4])
+	endfor
+	field[STR_LENGTH] s_38 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_38[i] = p_16[i] * (s_37[i - 1])
+	endfor
+	field[STR_LENGTH] s_40 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_40[i] = p_23[i] * (s_37[i - 1] + s_38[i - 1])
+	endfor
+	field[STR_LENGTH] f_43 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		f_43[i] = (s_30[i] + s_34[i] + s_35[i] + s_36[i] + s_37[i] + s_38[i] + s_40[i])
+		accum = accum + f_43[i]
+	endfor
+	field[STR_LENGTH] s_44 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		s_44[i] = p_25[i] * start[i - 2]
+	endfor
+	field[STR_LENGTH] s_45 = [0; STR_LENGTH]
+	for u32 i in 8..STR_LENGTH do
+		s_45[i] = p_26[i] * start[i - 8]
+	endfor
+	field[STR_LENGTH] f_46 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		f_46[i] = (s_44[i] + s_45[i])
+		accum = accum + f_46[i]
+	endfor
+	field[STR_LENGTH] s_47 = [0; STR_LENGTH]
+	for u32 i in 3..STR_LENGTH do
+		s_47[i] = p_27[i] * start[i - 3]
+	endfor
+	field[STR_LENGTH] s_48 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_48[i] = p_28[i] * (s_47[i - 1])
+	endfor
+	field[STR_LENGTH] s_50 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		s_50[i] = p_29[i] * (s_47[i - 2] + s_48[i - 2])
+	endfor
+	field[STR_LENGTH] s_51 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		s_51[i] = p_30[i] * (s_47[i - 2] + s_48[i - 2])
+	endfor
+	field[STR_LENGTH] s_53 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_53[i] = p_31[i] * (s_50[i - 1] + s_51[i - 1])
+	endfor
+	field[STR_LENGTH] s_54 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_54[i] = p_32[i] * (s_50[i - 1] + s_51[i - 1])
+	endfor
+	field[STR_LENGTH] s_56 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		s_56[i] = p_33[i] * (s_53[i - 2] + s_54[i - 2])
+	endfor
+	field[STR_LENGTH] s_57 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		s_57[i] = p_34[i] * (s_53[i - 2] + s_54[i - 2])
+	endfor
+	field[STR_LENGTH] s_59 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_59[i] = p_28[i] * (s_56[i - 1] + s_57[i - 1])
+	endfor
+	field[STR_LENGTH] f_61 = [0; STR_LENGTH]
+	for u32 i in 4..STR_LENGTH do
+		f_61[i] = p_3[i] * (s_56[i - 4] + s_57[i - 4] + s_59[i - 4])
+		accum = accum + f_61[i]
+	endfor
+	field[STR_LENGTH] s_62 = [0; STR_LENGTH]
+	for u32 i in 3..STR_LENGTH do
+		s_62[i] = p_35[i] * start[i - 3]
+	endfor
+	field[STR_LENGTH] s_63 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_63[i] = p_17[i] * (s_62[i - 1])
+	endfor
+	field[STR_LENGTH] s_65 = [0; STR_LENGTH]
+	for u32 i in 5..STR_LENGTH do
+		s_65[i] = p_36[i] * (s_62[i - 5] + s_63[i - 5])
+	endfor
+	field[STR_LENGTH] s_66 = [0; STR_LENGTH]
+	for u32 i in 3..STR_LENGTH do
+		s_66[i] = p_35[i] * (s_62[i - 3] + s_63[i - 3])
+	endfor
+	field[STR_LENGTH] s_68 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_68[i] = p_17[i] * (s_65[i - 1] + s_66[i - 1])
+	endfor
+	field[STR_LENGTH] s_70 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		s_70[i] = p_37[i] * (s_65[i - 2] + s_66[i - 2] + s_68[i - 2])
+	endfor
+	field[STR_LENGTH] s_71 = [0; STR_LENGTH]
+	for u32 i in 3..STR_LENGTH do
+		s_71[i] = p_38[i] * (s_65[i - 3] + s_66[i - 3] + s_68[i - 3])
+	endfor
+	field[STR_LENGTH] s_72 = [0; STR_LENGTH]
+	for u32 i in 8..STR_LENGTH do
+		s_72[i] = p_39[i] * (s_65[i - 8] + s_66[i - 8] + s_68[i - 8])
+	endfor
+	field[STR_LENGTH] s_73 = [0; STR_LENGTH]
+	for u32 i in 3..STR_LENGTH do
+		s_73[i] = p_40[i] * (s_65[i - 3] + s_66[i - 3] + s_68[i - 3])
+	endfor
+	field[STR_LENGTH] s_74 = [0; STR_LENGTH]
+	for u32 i in 15..STR_LENGTH do
+		s_74[i] = p_41[i] * (s_65[i - 15] + s_66[i - 15] + s_68[i - 15])
+	endfor
+	field[STR_LENGTH] f_75 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		f_75[i] = (s_70[i] + s_71[i] + s_72[i] + s_73[i] + s_74[i])
+		accum = accum + f_75[i]
+	endfor
+	field[STR_LENGTH] f_76 = [0; STR_LENGTH]
+	for u32 i in 11..STR_LENGTH do
+		f_76[i] = p_42[i] * start[i - 11]
+		accum = accum + f_76[i]
+	endfor
+	field[STR_LENGTH] s_77 = [0; STR_LENGTH]
+	for u32 i in 10..STR_LENGTH do
+		s_77[i] = p_43[i] * start[i - 10]
+	endfor
+	field[STR_LENGTH] s_78 = [0; STR_LENGTH]
+	for u32 i in 15..STR_LENGTH do
+		s_78[i] = p_41[i] * start[i - 15]
+	endfor
+	field[STR_LENGTH] s_80 = [0; STR_LENGTH]
+	for u32 i in 7..STR_LENGTH do
+		s_80[i] = p_44[i] * (s_77[i - 7] + s_78[i - 7])
+	endfor
+	field[STR_LENGTH] s_81 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		s_81[i] = p_45[i] * (s_77[i - 2] + s_78[i - 2])
+	endfor
+	field[STR_LENGTH] s_82 = [0; STR_LENGTH]
+	for u32 i in 3..STR_LENGTH do
+		s_82[i] = p_46[i] * (s_77[i - 3] + s_78[i - 3])
+	endfor
+	field[STR_LENGTH] s_83 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_83[i] = p_47[i] * (s_77[i - 1] + s_78[i - 1])
+	endfor
+	field[STR_LENGTH] s_84 = [0; STR_LENGTH]
+	for u32 i in 7..STR_LENGTH do
+		s_84[i] = p_48[i] * (s_77[i - 7] + s_78[i - 7])
+	endfor
+	field[STR_LENGTH] s_85 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		s_85[i] = p_49[i] * (s_77[i - 2] + s_78[i - 2])
+	endfor
+	field[STR_LENGTH] s_87 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_87[i] = p_50[i] * (s_80[i - 1] + s_81[i - 1] + s_82[i - 1] + s_83[i - 1] + s_84[i - 1] + s_85[i - 1])
+	endfor
+	field[STR_LENGTH] s_88 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_88[i] = p_23[i] * (s_80[i - 1] + s_81[i - 1] + s_82[i - 1] + s_83[i - 1] + s_84[i - 1] + s_85[i - 1])
+	endfor
+	field[STR_LENGTH] s_89 = [0; STR_LENGTH]
+	for u32 i in 4..STR_LENGTH do
+		s_89[i] = p_51[i] * (s_80[i - 4] + s_81[i - 4] + s_82[i - 4] + s_83[i - 4] + s_84[i - 4] + s_85[i - 4])
+	endfor
+	field[STR_LENGTH] f_90 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		f_90[i] = (s_87[i] + s_88[i] + s_89[i])
+		accum = accum + f_90[i]
+	endfor
+	field[STR_LENGTH] f_91 = [0; STR_LENGTH]
+	for u32 i in 9..STR_LENGTH do
+		f_91[i] = p_52[i] * start[i - 9]
+		accum = accum + f_91[i]
+	endfor
+	field[STR_LENGTH] s_92 = [0; STR_LENGTH]
+	for u32 i in 16..STR_LENGTH do
+		s_92[i] = p_53[i] * start[i - 16]
+	endfor
+	field[STR_LENGTH] s_93 = [0; STR_LENGTH]
+	for u32 i in 11..STR_LENGTH do
+		s_93[i] = p_54[i] * start[i - 11]
+	endfor
+	field[STR_LENGTH] s_94 = [0; STR_LENGTH]
+	for u32 i in 8..STR_LENGTH do
+		s_94[i] = p_55[i] * start[i - 8]
+	endfor
+	field[STR_LENGTH] s_96 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_96[i] = p_17[i] * (s_92[i - 1] + s_93[i - 1] + s_94[i - 1])
+	endfor
+	field[STR_LENGTH] s_98 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_98[i] = p_23[i] * (s_92[i - 1] + s_93[i - 1] + s_94[i - 1] + s_96[i - 1])
+	endfor
+	field[STR_LENGTH] s_99 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		s_99[i] = p_56[i] * (s_92[i - 2] + s_93[i - 2] + s_94[i - 2] + s_96[i - 2])
+	endfor
+	field[STR_LENGTH] s_100 = [0; STR_LENGTH]
+	for u32 i in 6..STR_LENGTH do
+		s_100[i] = p_21[i] * (s_92[i - 6] + s_93[i - 6] + s_94[i - 6] + s_96[i - 6])
+	endfor
+	field[STR_LENGTH] s_101 = [0; STR_LENGTH]
+	for u32 i in 7..STR_LENGTH do
+		s_101[i] = p_22[i] * (s_92[i - 7] + s_93[i - 7] + s_94[i - 7] + s_96[i - 7])
+	endfor
+	field[STR_LENGTH] s_103 = [0; STR_LENGTH]
+	for u32 i in 2..STR_LENGTH do
+		s_103[i] = p_37[i] * (s_92[i - 2] + s_93[i - 2] + s_94[i - 2])
+	endfor
+	field[STR_LENGTH] s_104 = [0; STR_LENGTH]
+	for u32 i in 1..STR_LENGTH do
+		s_104[i] = p_16[i] * (s_92[i - 1] + s_93[i - 1] + s_94[i - 1])
+	endfor
+	field[STR_LENGTH] f_105 = [0; STR_LENGTH]
+	for u32 i in 0..STR_LENGTH do
+		f_105[i] = (s_98[i] + s_99[i] + s_100[i] + s_101[i] + s_103[i] + s_104[i])
+		accum = accum + f_105[i]
+	endfor
+	assert(procCheck(f_8, f_21))
+	assert(procCheck(f_22, f_43))
+	assert(procCheck(f_22, f_46))
+	assert(procCheck(f_61, f_75))
+	assert(procCheck(f_76, f_90))
+	assert(procCheck(f_91, f_105))
+	assert(accum == 0)
+	return false

@@ -1,0 +1,212 @@
+from "Util.zok" import myreverse, u32_to_u8
+from "EMBED" import u8_to_u32
+
+def deserializeQuestion<OFFSET>(u8[255] dns_message) -> u8[2][255]:
+    u32 skip_index = OFFSET
+    u8[255] all_labels = [0; 255]
+    u8 true_length = 0
+    u8 keep_reading = 1
+
+    for u32 i in 0..255-OFFSET do
+        keep_reading = if (i + OFFSET == skip_index && dns_message[i + OFFSET] == 0) || keep_reading == 0 then 0 else 1 fi
+        // 46 is ascii code fo .
+        all_labels[i] = if i + OFFSET == skip_index then 46 * keep_reading else dns_message[i + OFFSET] * keep_reading fi
+        true_length = if i + OFFSET == skip_index && keep_reading == 1 then true_length + dns_message[i + OFFSET] + 1 else true_length fi
+        skip_index = if i + OFFSET == skip_index then u8_to_u32(dns_message[i + OFFSET]) + skip_index + 1 else skip_index fi
+    endfor
+
+    return [all_labels, [true_length, ...[0; 254]]]
+
+def extractDoT(u8[255] dns_message) -> u8[2][255]:
+    return deserializeQuestion::<14>(dns_message)
+
+def extractDoTReverse(u8[255] dns_message) -> u8[2][255]:
+    u8[2][255] return_values = extractDoT(dns_message)
+
+    u8[255] all_labels = return_values[0]
+    u8 true_length = return_values[1][0]
+
+    u8[255] reverse_label = myreverse(all_labels, true_length)
+
+    return [reverse_label, return_values[1]]
+
+
+// def check_method(u8[255] dns_message, u8[4] first_four_bytes) -> bool :
+//     for u32 i in 0..4 do
+//         assert(first_four_bytes[i] == dns_message[i])
+//     endfor
+//     return true
+
+//--------------------------- DoH Stuff ---------------------------//
+
+
+def decode_base64_character(u8 ch) -> u8 :
+    u8 index = 62 // the index of +, which is ASCII 43
+
+    index = if (ch == 47) then 63 else index fi // index of slash '/'
+    index = if (ch >= 97 ) then ch-71 else index fi // lower case letters 
+    index = if (ch < 97 && ch >= 65) then ch-65 else index fi // upper case letters
+    index = if (ch < 65 && ch >= 48) then ch+4 else index fi // numbers
+
+    // output = u8(b64_decode_ram[u8(ch)]); 
+     
+    return index 
+
+// Given four base64 characters, 
+// this function returns the three ASCII characters they encode. 
+
+def convert_one_base64_block(u8[4] input) -> u8[3]:
+     
+    u32 one_block = 0 
+     
+    u8 converted_value = 0
+     
+    for u32 j in 0..4 do 
+      converted_value = decode_base64_character(input[j]) 
+      one_block = one_block | (u8_to_u32(converted_value) << (6 * (3-j)))
+    //   one_block = one_block | (u24(converted_value) << (6 * (3 - j))); 
+    endfor 
+     
+    u8[3] output = [0; 3] 
+     
+    for u32 i in 0..3 do 
+      output[i] = u32_to_u8(one_block >> (8 * (2 - i)))
+    endfor 
+     
+    return output 
+
+def convert_base64_to_ascii(u8[344] input, u16 length) -> u8[258]:
+    u8[258] output = [0; 258]
+        
+    u8[4] four_bytes = [0; 4]
+    u8[3] block = [0; 3]
+        
+    for u32 i in 0..86 do 
+        // take 4 bytes and convert each via the table from b64 to ascii 
+        for u32 j in 0..4 do 
+            four_bytes[j] = input[i * 4 + j]
+        endfor 
+        
+        block = convert_one_base64_block(four_bytes)
+        
+        for u32 k in 0..3 do 
+            output[i * 3 + k] = block[k]
+        endfor 
+    endfor 
+        
+    return output
+
+def extractDoHGET(u8[500] dns_message) -> u8[2][255]:
+    u8[4] first_four_get = [71, 69, 84, 32]
+
+    // check_method(dns_message, first_four_get)
+    for u32 i in 0..4 do
+        assert(first_four_get[i] == dns_message[i])
+    endfor
+    
+    u8[344] wire_format_base64 = [0; 344]
+    bool seen_space = false
+    u16 wf_length = 0
+    for u32 i in 0..344 do 
+        wire_format_base64[i] = if (!seen_space && dns_message[i+19] != 32) then dns_message[i+19] else 0 fi
+        wf_length = if (!seen_space && dns_message[i+19] != 32) then wf_length+1 else wf_length fi
+        seen_space = if (!seen_space && dns_message[i+19] == 32) then true else seen_space fi 
+    endfor
+
+    // call convert_base64_to_ascii
+    u8[258] converted =  convert_base64_to_ascii(wire_format_base64, wf_length)
+
+    // return [ converted[0..255] , [0; 255]]
+
+    return deserializeQuestion::<12>(converted[0..255]) 
+
+def extractDoHGETReverse(u8[500] dns_message) -> u8[2][255]:
+    u8[2][255] return_values = extractDoHGET(dns_message)
+
+    u8[255] all_labels = return_values[0]
+    u8 true_length = return_values[1][0]
+
+    u8[255] reverse_label = myreverse(all_labels, true_length)
+
+    return [reverse_label, return_values[1]]
+
+
+// test case
+// def main(u8[255] dns_message) -> bool:
+//     // b'\x00\x1c\x1e\xe2\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x06amazon\x03com\x00\x00\x01\x00\x01'
+//     u8[255] my_msg = [0, 28, 30, 226, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 6, 97, 109, 97, 122, 111, 110, 3, 99, 111, 109, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+//     u8[2][255] result = extractDoTReverse(my_msg)
+//     // text should be moc.nozama.
+//     u8[11] expected_text = [109, 111, 99, 46, 110, 111, 122, 97, 109, 97, 46]
+//     bool ok = true
+//     for u32 i in 0..11 do 
+//         ok = ok && (result[0][i] == expected_text[i])
+//     endfor
+//     // length should be 11
+//     ok = ok && result[1][0] == 11
+//     return ok
+
+
+// WORK CODE
+
+// def main(u8[255] dns_message, u32 prefix_len) -> u8[255]:
+//     u8[255] result = [0; 255]
+//     for u32 i in 0..255 do
+//         u32 idx = if i < prefix_len then prefix_len - i - 1 else 0 fi
+//         result[i] = if i < prefix_len then dns_message[idx] else 0 fi
+//     endfor
+//     return result
+
+
+// UNWORK CODE, circ can't handle const array?
+
+// def main(u8[255] dns_message, u32 true_length) -> u8[255]:
+//     u8[255] result = [0; 255]
+//     // for u32 i in 0..255 do
+//     //     result[i] = dns_message[i]
+//     // endfor
+//     result[true_length] = 5
+//     return result
+
+// def main(u8[4] dns_message, u32 true_length) -> u8[4]:
+//     ram = [
+//         ["m", "store", true_length, 5],
+//         ["m", "load", 0, 0]
+//         ["m", "load", 1, 1]
+//         ["m", "load", 2, 2]
+//         ["m", "load", 3, 3]
+//     ]
+//     sort(ram)
+//     check(ram)
+//     return [a, b, c, d]
+
+// def main(u8[4] dns_message, u32 true_length) -> u8[4]:
+//     u8[4] all_labels = [0; 4]
+//     return reverse(all_labels, true_length)
+
+// def main(u8[4] dns_message, u32 prefix_len) -> u8[4]:
+//     // how can circ handle a const?
+//     u8[4] result = [0; 4]
+//     u8[4] all_labels = [1; 4]
+//     for u32 i in 0..4 do
+//         u32 idx = if i < prefix_len then prefix_len - i - 1 else 0 fi
+//         result[i] = if i < prefix_len then all_labels[idx] else 0 fi
+//     endfor
+//     return result
+
+// def main(u8[4] dns_message, u32 prefix_len) -> u8[4]:
+//     u8[4] result = [0; 4]
+//     for u32 i in 0..4 do
+//         u32 idx = if i < prefix_len then prefix_len - i - 1 else 0 fi
+//         result[i] = if i < prefix_len then dns_message[idx] else 0 fi
+//     endfor
+//     return result
+
+// def main(u8[255] dns_message, u32 true_length) -> u8[255]:
+//     u8[255] return_values = extractDoT(dns_message)
+
+//     u8[255] all_labels = return_values
+
+//     u8[255] reverse_label = reverse(all_labels, true_length)
+
+//     return reverse_label

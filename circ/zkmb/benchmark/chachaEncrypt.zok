@@ -1,0 +1,4 @@
+from "../ChaCha.zok" import chachaEncrypt
+
+def main(u8[32] key, u8[12] nonce, u8[255] msg, u32 counter) -> u8[255]:
+    return chachaEncrypt(key, nonce, msg, counter)

@@ -1,0 +1,4 @@
+from "../tls_key_schedules/tls_key_schedule.zok" import sha2_of_tail
+
+def main(u8[128] tail, u8 tail_length, u16 full_length, u32[8] H_checkpoint) -> u8[32]:
+    return sha2_of_tail(tail, tail_length, full_length, H_checkpoint)

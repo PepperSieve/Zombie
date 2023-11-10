@@ -1,0 +1,7 @@
+# cargo build
+cd target/debug
+gcc test.c -o test -L/home/ubuntu/collin/Spartan/target/debug -llibspartan
+cd ../..
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ubuntu/collin/Spartan/target/debug
+export LD_LIBRARY_PATH 
+./target/debug/test

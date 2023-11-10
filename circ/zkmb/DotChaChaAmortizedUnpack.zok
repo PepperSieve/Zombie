@@ -1,0 +1,46 @@
+from "../third_party/ZoKrates/zokrates_stdlib/stdlib/hashes/poseidon/poseidon.zok" import generate_poseidon
+from "ChaCha.zok" import chachaEncrypt
+from "Util.zok" import xor_field, field_to_u8_array, pack_u8_arr, u32_to_four_u8, compare_field, xor_arrays
+from "LabelExtraction.zok" import extractDoTReverse
+from "./membership_merkle/non_membership.zok" import check_wildcard_python_path
+
+const u32 PAD_LEN = 255
+const u32 NUM_FIELDS = 9 // ceil(255/31)
+const u32 REMAINDER = 7 // 255 % 31
+
+def verifyUnpack(u8[255] pad, field comm_pad) -> bool :          
+    u8[NUM_FIELDS][31] reorg_pad = [[0;31]; NUM_FIELDS]
+    for u32 i in 0..(NUM_FIELDS-1) do
+        for u32 j in 0..31 do
+            reorg_pad[i][j] = pad[i*31 + j]
+        endfor 
+    endfor 
+    
+    for u32 i in 0..REMAINDER do 
+        reorg_pad[NUM_FIELDS-1][i] = pad[(NUM_FIELDS-1)*31 + i]
+    endfor 
+
+    field[NUM_FIELDS] packed_fields = [0f; NUM_FIELDS]
+    for u32 i in 0..NUM_FIELDS do
+        packed_fields[i] = pack_u8_arr::<31>(reorg_pad[i])
+    endfor 
+
+    // Constraints: 4077 
+    field comm_pad_calc = 0f
+    for u32 i in 0..NUM_FIELDS do 
+        comm_pad_calc = generate_poseidon([comm_pad_calc, packed_fields[i]])
+    endfor 
+
+    return (comm_pad_calc == comm_pad)
+
+def main(private u8[255] pad, field comm_pad, u8[255] dns_ct, field root, private u8[255] left_domain_name, private u8[255] right_domain_name, private u32 left_index, private u32 right_index, private field[21] left_path_array, private field[21] right_path_array, private u64 left_dir, private u64 right_dir) -> bool:
+        assert(verifyUnpack(pad, comm_pad))
+
+        u8[255] dns_query = xor_arrays(pad, dns_ct)
+
+        u8[2][255] extraction_values = extractDoTReverse(dns_query)
+
+        u8[255] dns_labels_rev = extraction_values[0]
+
+        assert(check_wildcard_python_path::<21>(dns_labels_rev, root, left_domain_name, right_domain_name, left_index, right_index, left_path_array, right_path_array, left_dir, right_dir))
+        return check_wildcard_python_path::<21>(dns_labels_rev, root, left_domain_name, right_domain_name, left_index, right_index, left_path_array, right_path_array, left_dir, right_dir) 

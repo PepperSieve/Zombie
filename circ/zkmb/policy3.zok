@@ -1,0 +1,853 @@
+// partial naive
+const u32 STR_LENGTH = 1000
+const u32 PROXY_DIST = 300
+
+def isZero(field x) -> bool:
+        bool y = if x == 0 then true else false fi
+        return y
+
+def spread(bool[STR_LENGTH] x) -> bool[STR_LENGTH]:
+        bool[STR_LENGTH] y = [false;STR_LENGTH]
+        for u32 i in PROXY_DIST..(STR_LENGTH-PROXY_DIST) do
+                bool sum = false
+                for u32 j in (i-PROXY_DIST)..(i+PROXY_DIST) do
+                        sum = sum || x[j]
+                endfor
+                y[i] = sum
+        endfor
+        return y
+
+def procCheck(bool[STR_LENGTH] l, bool[STR_LENGTH] r) -> bool:
+        bool[STR_LENGTH] ls = spread(l)
+        for u32 i in 0..STR_LENGTH do
+                assert(!(ls[i] && r[i]))
+        endfor
+        return true
+
+def parseExtract(field[STR_LENGTH] s) -> bool[STR_LENGTH]:
+        bool[STR_LENGTH] ls = [false; STR_LENGTH]
+        for u32 i in 4..STR_LENGTH do
+                ls[i] = ls[i - 1] || isZero((s[i - 4] - 13) + 256 * (s[i - 3] - 10) + 65536 * (s[i - 2] - 13) + 16777216 * (s[i - 1] - 10))
+        endfor
+        return ls
+
+def main(field[STR_LENGTH] t, u8[STR_LENGTH] tu) -> bool:
+        bool[STR_LENGTH] start = parseExtract(t)
+        bool[STR_LENGTH] p_5 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                p_5[i] = isZero((t[i - 0] - 32))
+        endfor
+        bool[STR_LENGTH] p_47 = [false;STR_LENGTH]
+        for u32 i in 8..STR_LENGTH do
+                p_47[i] = isZero((t[i - 8] - 32) + (t[i - 7] - 112) * 256 + (t[i - 6] - 97) * 65536 + (t[i - 5] - 115) * 16777216 + (t[i - 4] - 115) * 4294967296 + (t[i - 3] - 112) * 1099511627776 + (t[i - 2] - 111) * 281474976710656 + (t[i - 1] - 114) * 72057594037927936 + (t[i - 0] - 116) * 18446744073709551616)
+        endfor
+        bool[STR_LENGTH] t_0 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                t_0[i] = isZero(t[i] - 32) || isZero(t[i] - 45)
+        endfor
+        bool[STR_LENGTH] p_23 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                p_23[i] = t_0[i]
+        endfor
+        bool[STR_LENGTH] p_10 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                p_10[i] = isZero((t[i - 0] - 35))
+        endfor
+        bool[STR_LENGTH] p_12 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                p_12[i] = isZero((t[i - 0] - 39))
+        endfor
+        bool[STR_LENGTH] p_36 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                p_36[i] = isZero((t[i - 0] - 45))
+        endfor
+        bool[STR_LENGTH] p_38 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                p_38[i] = isZero((t[i - 0] - 46))
+        endfor
+        bool[STR_LENGTH] t_1 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                t_1[i] = isZero(t[i] - 48) || isZero(t[i] - 49) || isZero(t[i] - 50) || isZero(t[i] - 51) || isZero(t[i] - 52) || isZero(t[i] - 53)
+        endfor
+        bool[STR_LENGTH] p_26 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                p_26[i] = t_1[i]
+        endfor
+        bool[STR_LENGTH] t_2 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                t_2[i] = isZero(t[i] - 48) || isZero(t[i] - 49) || isZero(t[i] - 50) || isZero(t[i] - 51) || isZero(t[i] - 52) || isZero(t[i] - 53) || isZero(t[i] - 54) || isZero(t[i] - 55) || isZero(t[i] - 56)
+        endfor
+        bool[STR_LENGTH] p_28 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                p_28[i] = t_2[i]
+        endfor
+        bool[STR_LENGTH] t_3 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                t_3[i] = isZero(t[i] - 48) || isZero(t[i] - 49) || isZero(t[i] - 50) || isZero(t[i] - 51) || isZero(t[i] - 52) || isZero(t[i] - 53) || isZero(t[i] - 54) || isZero(t[i] - 55) || isZero(t[i] - 56) || isZero(t[i] - 57)
+        endfor
+        bool[STR_LENGTH] p_0 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                p_0[i] = t_3[i]
+        endfor
+        bool[STR_LENGTH] t_4 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                t_4[i] = isZero(t[i] - 48) || isZero(t[i] - 49) || isZero(t[i] - 50) || isZero(t[i] - 51) || isZero(t[i] - 52) || isZero(t[i] - 53) || isZero(t[i] - 54) || isZero(t[i] - 55) || isZero(t[i] - 56) || isZero(t[i] - 57) || isZero(t[i] - 65) || isZero(t[i] - 66) || isZero(t[i] - 67) || isZero(t[i] - 68) || isZero(t[i] - 69) || isZero(t[i] - 70) || isZero(t[i] - 71) || isZero(t[i] - 72) || isZero(t[i] - 73) || isZero(t[i] - 74) || isZero(t[i] - 75) || isZero(t[i] - 76) || isZero(t[i] - 77) || isZero(t[i] - 78) || isZero(t[i] - 79) || isZero(t[i] - 80) || isZero(t[i] - 81) || isZero(t[i] - 82) || isZero(t[i] - 83) || isZero(t[i] - 84) || isZero(t[i] - 85) || isZero(t[i] - 86) || isZero(t[i] - 87) || isZero(t[i] - 88) || isZero(t[i] - 89) || isZero(t[i] - 90) || isZero(t[i] - 97) || isZero(t[i] - 98) || isZero(t[i] - 99) || isZero(t[i] - 100) || isZero(t[i] - 101) || isZero(t[i] - 102) || isZero(t[i] - 103) || isZero(t[i] - 104) || isZero(t[i] - 105) || isZero(t[i] - 106) || isZero(t[i] - 107) || isZero(t[i] - 108) || isZero(t[i] - 109) || isZero(t[i] - 110) || isZero(t[i] - 111) || isZero(t[i] - 112) || isZero(t[i] - 113) || isZero(t[i] - 114) || isZero(t[i] - 115) || isZero(t[i] - 116) || isZero(t[i] - 117) || isZero(t[i] - 118) || isZero(t[i] - 119) || isZero(t[i] - 120) || isZero(t[i] - 121) || isZero(t[i] - 122)
+        endfor
+        bool[STR_LENGTH] p_44 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                p_44[i] = t_4[i]
+        endfor
+        bool[STR_LENGTH] t_5 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                t_5[i] = isZero(t[i] - 48) || isZero(t[i] - 49) || isZero(t[i] - 50) || isZero(t[i] - 52) || isZero(t[i] - 53) || isZero(t[i] - 54) || isZero(t[i] - 55) || isZero(t[i] - 56) || isZero(t[i] - 57)
+        endfor
+        bool[STR_LENGTH] p_29 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                p_29[i] = t_5[i]
+        endfor
+        bool[STR_LENGTH] t_6 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                t_6[i] = isZero(t[i] - 53) || isZero(t[i] - 55)
+        endfor
+        bool[STR_LENGTH] p_24 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                p_24[i] = t_6[i]
+        endfor
+        bool[STR_LENGTH] p_25 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                p_25[i] = isZero((t[i - 0] - 54))
+        endfor
+        bool[STR_LENGTH] p_27 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                p_27[i] = isZero((t[i - 0] - 56))
+        endfor
+        bool[STR_LENGTH] p_22 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                p_22[i] = isZero((t[i - 0] - 57))
+        endfor
+        bool[STR_LENGTH] p_6 = [false;STR_LENGTH]
+        for u32 i in 6..STR_LENGTH do
+                p_6[i] = isZero((t[i - 6] - 65) + (t[i - 5] - 99) * 256 + (t[i - 4] - 99) * 65536 + (t[i - 3] - 111) * 16777216 + (t[i - 2] - 117) * 4294967296 + (t[i - 1] - 110) * 1099511627776 + (t[i - 0] - 116) * 281474976710656)
+        endfor
+        bool[STR_LENGTH] p_7 = [false;STR_LENGTH]
+        for u32 i in 3..STR_LENGTH do
+                p_7[i] = isZero((t[i - 3] - 65) + (t[i - 2] - 99) * 256 + (t[i - 1] - 99) * 65536 + (t[i - 0] - 116) * 16777216)
+        endfor
+        bool[STR_LENGTH] p_2 = [false;STR_LENGTH]
+        for u32 i in 3..STR_LENGTH do
+                p_2[i] = isZero((t[i - 3] - 66) + (t[i - 2] - 97) * 256 + (t[i - 1] - 110) * 65536 + (t[i - 0] - 107) * 16777216)
+        endfor
+        bool[STR_LENGTH] p_1 = [false;STR_LENGTH]
+        for u32 i in 7..STR_LENGTH do
+                p_1[i] = isZero((t[i - 7] - 67) + (t[i - 6] - 104) * 256 + (t[i - 5] - 101) * 65536 + (t[i - 4] - 99) * 16777216 + (t[i - 3] - 107) * 4294967296 + (t[i - 2] - 105) * 1099511627776 + (t[i - 1] - 110) * 281474976710656 + (t[i - 0] - 103) * 72057594037927936)
+        endfor
+        bool[STR_LENGTH] p_4 = [false;STR_LENGTH]
+        for u32 i in 4..STR_LENGTH do
+                p_4[i] = isZero((t[i - 4] - 68) + (t[i - 3] - 101) * 256 + (t[i - 2] - 98) * 65536 + (t[i - 1] - 105) * 16777216 + (t[i - 0] - 116) * 4294967296)
+        endfor
+        bool[STR_LENGTH] p_11 = [false;STR_LENGTH]
+        for u32 i in 5..STR_LENGTH do
+                p_11[i] = isZero((t[i - 5] - 68) + (t[i - 4] - 114) * 256 + (t[i - 3] - 105) * 65536 + (t[i - 2] - 118) * 16777216 + (t[i - 1] - 101) * 4294967296 + (t[i - 0] - 114) * 1099511627776)
+        endfor
+        bool[STR_LENGTH] p_14 = [false;STR_LENGTH]
+        for u32 i in 2..STR_LENGTH do
+                p_14[i] = isZero((t[i - 2] - 76) + (t[i - 1] - 105) * 256 + (t[i - 0] - 99) * 65536)
+        endfor
+        bool[STR_LENGTH] p_42 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                p_42[i] = isZero((t[i - 0] - 78))
+        endfor
+        bool[STR_LENGTH] p_20 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                p_20[i] = isZero((t[i - 1] - 78) + (t[i - 0] - 89) * 256)
+        endfor
+        bool[STR_LENGTH] p_21 = [false;STR_LENGTH]
+        for u32 i in 7..STR_LENGTH do
+                p_21[i] = isZero((t[i - 7] - 78) + (t[i - 6] - 101) * 256 + (t[i - 5] - 119) * 65536 + (t[i - 4] - 32) * 16777216 + (t[i - 3] - 89) * 4294967296 + (t[i - 2] - 111) * 1099511627776 + (t[i - 1] - 114) * 281474976710656 + (t[i - 0] - 107) * 72057594037927936)
+        endfor
+        bool[STR_LENGTH] p_9 = [false;STR_LENGTH]
+        for u32 i in 2..STR_LENGTH do
+                p_9[i] = isZero((t[i - 2] - 78) + (t[i - 1] - 111) * 256 + (t[i - 0] - 46) * 65536)
+        endfor
+        bool[STR_LENGTH] p_8 = [false;STR_LENGTH]
+        for u32 i in 5..STR_LENGTH do
+                p_8[i] = isZero((t[i - 5] - 78) + (t[i - 4] - 117) * 256 + (t[i - 3] - 109) * 65536 + (t[i - 2] - 98) * 16777216 + (t[i - 1] - 101) * 4294967296 + (t[i - 0] - 114) * 1099511627776)
+        endfor
+        bool[STR_LENGTH] p_41 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                p_41[i] = isZero((t[i - 1] - 83) + (t[i - 0] - 83) * 256)
+        endfor
+        bool[STR_LENGTH] p_37 = [false;STR_LENGTH]
+        for u32 i in 9..STR_LENGTH do
+                p_37[i] = isZero((t[i - 9] - 83) + (t[i - 8] - 83) * 256 + (t[i - 7] - 65) * 65536 + (t[i - 6] - 32) * 16777216 + (t[i - 5] - 78) * 4294967296 + (t[i - 4] - 117) * 1099511627776 + (t[i - 3] - 109) * 281474976710656 + (t[i - 2] - 98) * 72057594037927936 + (t[i - 1] - 101) * 18446744073709551616 + (t[i - 0] - 114) * 4722366482869645213696)
+        endfor
+        bool[STR_LENGTH] p_43 = [false;STR_LENGTH]
+        for u32 i in 3..STR_LENGTH do
+                p_43[i] = isZero((t[i - 3] - 83) + (t[i - 2] - 83) * 256 + (t[i - 1] - 73) * 65536 + (t[i - 0] - 68) * 16777216)
+        endfor
+        bool[STR_LENGTH] p_3 = [false;STR_LENGTH]
+        for u32 i in 6..STR_LENGTH do
+                p_3[i] = isZero((t[i - 6] - 83) + (t[i - 5] - 97) * 256 + (t[i - 4] - 118) * 65536 + (t[i - 3] - 105) * 16777216 + (t[i - 2] - 110) * 4294967296 + (t[i - 1] - 103) * 1099511627776 + (t[i - 0] - 115) * 281474976710656)
+        endfor
+        bool[STR_LENGTH] p_40 = [false;STR_LENGTH]
+        for u32 i in 6..STR_LENGTH do
+                p_40[i] = isZero((t[i - 6] - 83) + (t[i - 5] - 111) * 256 + (t[i - 4] - 99) * 65536 + (t[i - 3] - 32) * 16777216 + (t[i - 2] - 83) * 4294967296 + (t[i - 1] - 101) * 1099511627776 + (t[i - 0] - 99) * 281474976710656)
+        endfor
+        bool[STR_LENGTH] p_45 = [false;STR_LENGTH]
+        for u32 i in 6..STR_LENGTH do
+                p_45[i] = isZero((t[i - 6] - 98) + (t[i - 5] - 114) * 256 + (t[i - 4] - 105) * 65536 + (t[i - 3] - 116) * 16777216 + (t[i - 2] - 105) * 4294967296 + (t[i - 1] - 115) * 1099511627776 + (t[i - 0] - 104) * 281474976710656)
+        endfor
+        bool[STR_LENGTH] p_19 = [false;STR_LENGTH]
+        for u32 i in 3..STR_LENGTH do
+                p_19[i] = isZero((t[i - 3] - 99) + (t[i - 2] - 97) * 256 + (t[i - 1] - 114) * 65536 + (t[i - 0] - 100) * 16777216)
+        endfor
+        bool[STR_LENGTH] p_33 = [false;STR_LENGTH]
+        for u32 i in 7..STR_LENGTH do
+                p_33[i] = isZero((t[i - 7] - 105) + (t[i - 6] - 46) * 256 + (t[i - 5] - 116) * 65536 + (t[i - 4] - 46) * 16777216 + (t[i - 3] - 105) * 4294967296 + (t[i - 2] - 46) * 1099511627776 + (t[i - 1] - 110) * 281474976710656 + (t[i - 0] - 46) * 72057594037927936)
+        endfor
+        bool[STR_LENGTH] p_16 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                p_16[i] = isZero((t[i - 1] - 105) + (t[i - 0] - 100) * 256)
+        endfor
+        bool[STR_LENGTH] p_15 = [false;STR_LENGTH]
+        for u32 i in 13..STR_LENGTH do
+                p_15[i] = isZero((t[i - 13] - 105) + (t[i - 12] - 100) * 256 + (t[i - 11] - 101) * 65536 + (t[i - 10] - 110) * 16777216 + (t[i - 9] - 116) * 4294967296 + (t[i - 8] - 105) * 1099511627776 + (t[i - 7] - 102) * 281474976710656 + (t[i - 6] - 105) * 72057594037927936 + (t[i - 5] - 99) * 18446744073709551616 + (t[i - 4] - 97) * 4722366482869645213696 + (t[i - 3] - 116) * 1208925819614629174706176 + (t[i - 2] - 105) * 309485009821345068724781056 + (t[i - 1] - 111) * 79228162514264337593543950336 + (t[i - 0] - 110) * 20282409603651670423947251286016)
+        endfor
+        bool[STR_LENGTH] p_39 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                p_39[i] = isZero((t[i - 1] - 110) + (t[i - 0] - 111) * 256)
+        endfor
+        bool[STR_LENGTH] p_17 = [false;STR_LENGTH]
+        for u32 i in 5..STR_LENGTH do
+                p_17[i] = isZero((t[i - 5] - 110) + (t[i - 4] - 117) * 256 + (t[i - 3] - 109) * 65536 + (t[i - 2] - 98) * 16777216 + (t[i - 1] - 101) * 4294967296 + (t[i - 0] - 114) * 1099511627776)
+        endfor
+        bool[STR_LENGTH] p_18 = [false;STR_LENGTH]
+        for u32 i in 6..STR_LENGTH do
+                p_18[i] = isZero((t[i - 6] - 110) + (t[i - 5] - 117) * 256 + (t[i - 4] - 109) * 65536 + (t[i - 3] - 98) * 16777216 + (t[i - 2] - 101) * 4294967296 + (t[i - 1] - 114) * 1099511627776 + (t[i - 0] - 115) * 281474976710656)
+        endfor
+        bool[STR_LENGTH] p_48 = [false;STR_LENGTH]
+        for u32 i in 7..STR_LENGTH do
+                p_48[i] = isZero((t[i - 7] - 112) + (t[i - 6] - 97) * 256 + (t[i - 5] - 115) * 65536 + (t[i - 4] - 115) * 16777216 + (t[i - 3] - 112) * 4294967296 + (t[i - 2] - 111) * 1099511627776 + (t[i - 1] - 114) * 281474976710656 + (t[i - 0] - 116) * 72057594037927936)
+        endfor
+        bool[STR_LENGTH] p_31 = [false;STR_LENGTH]
+        for u32 i in 4..STR_LENGTH do
+                p_31[i] = isZero((t[i - 4] - 112) + (t[i - 3] - 97) * 256 + (t[i - 2] - 121) * 65536 + (t[i - 1] - 101) * 16777216 + (t[i - 0] - 114) * 4294967296)
+        endfor
+        bool[STR_LENGTH] p_13 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                p_13[i] = isZero((t[i - 0] - 115))
+        endfor
+        bool[STR_LENGTH] p_35 = [false;STR_LENGTH]
+        for u32 i in 14..STR_LENGTH do
+                p_35[i] = isZero((t[i - 14] - 115) + (t[i - 13] - 111) * 256 + (t[i - 12] - 99) * 65536 + (t[i - 11] - 105) * 16777216 + (t[i - 10] - 97) * 4294967296 + (t[i - 9] - 108) * 1099511627776 + (t[i - 8] - 32) * 281474976710656 + (t[i - 7] - 115) * 72057594037927936 + (t[i - 6] - 101) * 18446744073709551616 + (t[i - 5] - 99) * 4722366482869645213696 + (t[i - 4] - 117) * 1208925819614629174706176 + (t[i - 3] - 114) * 309485009821345068724781056 + (t[i - 2] - 105) * 79228162514264337593543950336 + (t[i - 1] - 116) * 20282409603651670423947251286016 + (t[i - 0] - 121) * 5192296858534827628530496329220096)
+        endfor
+        bool[STR_LENGTH] p_34 = [false;STR_LENGTH]
+        for u32 i in 2..STR_LENGTH do
+                p_34[i] = isZero((t[i - 2] - 115) + (t[i - 1] - 115) * 256 + (t[i - 0] - 110) * 65536)
+        endfor
+        bool[STR_LENGTH] p_30 = [false;STR_LENGTH]
+        for u32 i in 2..STR_LENGTH do
+                p_30[i] = isZero((t[i - 2] - 116) + (t[i - 1] - 97) * 256 + (t[i - 0] - 120) * 65536)
+        endfor
+        bool[STR_LENGTH] p_32 = [false;STR_LENGTH]
+        for u32 i in 2..STR_LENGTH do
+                p_32[i] = isZero((t[i - 2] - 116) + (t[i - 1] - 105) * 256 + (t[i - 0] - 110) * 65536)
+        endfor
+        bool[STR_LENGTH] p_46 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                p_46[i] = isZero((t[i - 1] - 117) + (t[i - 0] - 107) * 256)
+        endfor
+        bool[STR_LENGTH] s_0 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_0[i] = p_0[i] && start[i - 1]
+        endfor
+        bool[STR_LENGTH] s_1 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_1[i] = p_0[i] && (s_0[i - 1])
+        endfor
+        bool[STR_LENGTH] s_2 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_2[i] = p_0[i] && (s_1[i - 1])
+        endfor
+        bool[STR_LENGTH] s_3 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_3[i] = p_0[i] && (s_2[i - 1])
+        endfor
+        bool[STR_LENGTH] s_4 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_4[i] = p_0[i] && (s_3[i - 1])
+        endfor
+        bool[STR_LENGTH] s_5 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_5[i] = p_0[i] && (s_4[i - 1])
+        endfor
+        bool[STR_LENGTH] s_6 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_6[i] = p_0[i] && (s_5[i - 1])
+        endfor
+        bool[STR_LENGTH] s_8 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_8[i] = p_0[i] && (s_5[i - 1] || s_6[i - 1])
+        endfor
+        bool[STR_LENGTH] s_9 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_9[i] = p_0[i] && (s_8[i - 1])
+        endfor
+        bool[STR_LENGTH] s_11 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_11[i] = p_0[i] && (s_5[i - 1] || s_6[i - 1] || s_9[i - 1])
+        endfor
+        bool[STR_LENGTH] s_12 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_12[i] = p_0[i] && (s_11[i - 1])
+        endfor
+        bool[STR_LENGTH] s_13 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_13[i] = p_0[i] && (s_12[i - 1])
+        endfor
+        bool[STR_LENGTH] s_14 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_14[i] = p_0[i] && (s_13[i - 1])
+        endfor
+        bool[STR_LENGTH] s_16 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_16[i] = p_0[i] && (s_5[i - 1] || s_6[i - 1] || s_9[i - 1] || s_14[i - 1])
+        endfor
+        bool[STR_LENGTH] s_17 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_17[i] = p_0[i] && (s_16[i - 1])
+        endfor
+        bool[STR_LENGTH] s_18 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_18[i] = p_0[i] && (s_17[i - 1])
+        endfor
+        bool[STR_LENGTH] s_19 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_19[i] = p_0[i] && (s_18[i - 1])
+        endfor
+        bool[STR_LENGTH] f_20 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                f_20[i] = (s_5[i] || s_6[i] || s_9[i] || s_14[i] || s_19[i])
+                assert(!f_20[i])
+        endfor
+        bool[STR_LENGTH] s_21 = [false;STR_LENGTH]
+        for u32 i in 8..STR_LENGTH do
+                s_21[i] = p_1[i] && start[i - 8]
+        endfor
+        bool[STR_LENGTH] s_22 = [false;STR_LENGTH]
+        for u32 i in 4..STR_LENGTH do
+                s_22[i] = p_2[i] && start[i - 4]
+        endfor
+        bool[STR_LENGTH] s_23 = [false;STR_LENGTH]
+        for u32 i in 7..STR_LENGTH do
+                s_23[i] = p_3[i] && start[i - 7]
+        endfor
+        bool[STR_LENGTH] s_24 = [false;STR_LENGTH]
+        for u32 i in 5..STR_LENGTH do
+                s_24[i] = p_4[i] && start[i - 5]
+        endfor
+        bool[STR_LENGTH] s_26 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_26[i] = p_5[i] && (s_21[i - 1] || s_22[i - 1] || s_23[i - 1] || s_24[i - 1])
+        endfor
+        bool[STR_LENGTH] s_27 = [false;STR_LENGTH]
+        for u32 i in 7..STR_LENGTH do
+                s_27[i] = p_6[i] && (s_26[i - 7])
+        endfor
+        bool[STR_LENGTH] s_28 = [false;STR_LENGTH]
+        for u32 i in 4..STR_LENGTH do
+                s_28[i] = p_7[i] && (s_26[i - 4])
+        endfor
+        bool[STR_LENGTH] s_30 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_30[i] = p_5[i] && (s_27[i - 1] || s_28[i - 1])
+        endfor
+        bool[STR_LENGTH] s_31 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_31[i] = p_5[i] && (s_30[i - 1])
+        endfor
+        bool[STR_LENGTH] s_32 = [false;STR_LENGTH]
+        for u32 i in 6..STR_LENGTH do
+                s_32[i] = p_8[i] && (s_31[i - 6])
+        endfor
+        bool[STR_LENGTH] s_33 = [false;STR_LENGTH]
+        for u32 i in 3..STR_LENGTH do
+                s_33[i] = p_9[i] && (s_31[i - 3])
+        endfor
+        bool[STR_LENGTH] s_34 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_34[i] = p_10[i] && (s_31[i - 1])
+        endfor
+        bool[STR_LENGTH] s_36 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_36[i] = p_5[i] && (s_32[i - 1] || s_33[i - 1] || s_34[i - 1])
+        endfor
+        bool[STR_LENGTH] f_38 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                f_38[i] = p_5[i] && (s_30[i - 1] || s_36[i - 1])
+                assert(!f_38[i])
+        endfor
+        bool[STR_LENGTH] s_39 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_39[i] = p_0[i] && start[i - 1]
+        endfor
+        bool[STR_LENGTH] s_40 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_40[i] = p_0[i] && (s_39[i - 1])
+        endfor
+        bool[STR_LENGTH] s_41 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_41[i] = p_0[i] && (s_40[i - 1])
+        endfor
+        bool[STR_LENGTH] s_42 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_42[i] = p_5[i] && (s_41[i - 1])
+        endfor
+        bool[STR_LENGTH] s_43 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_43[i] = p_0[i] && (s_42[i - 1])
+        endfor
+        bool[STR_LENGTH] s_44 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_44[i] = p_0[i] && (s_43[i - 1])
+        endfor
+        bool[STR_LENGTH] s_45 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_45[i] = p_0[i] && (s_44[i - 1])
+        endfor
+        bool[STR_LENGTH] s_46 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_46[i] = p_5[i] && (s_45[i - 1])
+        endfor
+        bool[STR_LENGTH] s_47 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_47[i] = p_0[i] && (s_46[i - 1])
+        endfor
+        bool[STR_LENGTH] s_48 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_48[i] = p_0[i] && (s_47[i - 1])
+        endfor
+        bool[STR_LENGTH] f_49 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                f_49[i] = p_0[i] && (s_48[i - 1])
+                assert(!f_49[i])
+        endfor
+        bool[STR_LENGTH] s_50 = [false;STR_LENGTH]
+        for u32 i in 6..STR_LENGTH do
+                s_50[i] = p_11[i] && start[i - 6]
+        endfor
+        bool[STR_LENGTH] s_51 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_51[i] = p_12[i] && (s_50[i - 1])
+        endfor
+        bool[STR_LENGTH] s_53 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_53[i] = p_13[i] && (s_50[i - 1] || s_51[i - 1])
+        endfor
+        bool[STR_LENGTH] s_55 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_55[i] = p_5[i] && (s_50[i - 1] || s_51[i - 1] || s_53[i - 1])
+        endfor
+        bool[STR_LENGTH] s_57 = [false;STR_LENGTH]
+        for u32 i in 3..STR_LENGTH do
+                s_57[i] = p_14[i] && (s_50[i - 3] || s_51[i - 3] || s_53[i - 3] || s_55[i - 3])
+        endfor
+        bool[STR_LENGTH] s_58 = [false;STR_LENGTH]
+        for u32 i in 14..STR_LENGTH do
+                s_58[i] = p_15[i] && start[i - 14]
+        endfor
+        bool[STR_LENGTH] s_59 = [false;STR_LENGTH]
+        for u32 i in 2..STR_LENGTH do
+                s_59[i] = p_16[i] && start[i - 2]
+        endfor
+        bool[STR_LENGTH] s_61 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_61[i] = p_5[i] && (s_58[i - 1] || s_59[i - 1])
+        endfor
+        bool[STR_LENGTH] s_62 = [false;STR_LENGTH]
+        for u32 i in 6..STR_LENGTH do
+                s_62[i] = p_17[i] && (s_61[i - 6])
+        endfor
+        bool[STR_LENGTH] s_63 = [false;STR_LENGTH]
+        for u32 i in 7..STR_LENGTH do
+                s_63[i] = p_18[i] && (s_61[i - 7])
+        endfor
+        bool[STR_LENGTH] s_64 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_64[i] = p_10[i] && (s_61[i - 1])
+        endfor
+        bool[STR_LENGTH] s_65 = [false;STR_LENGTH]
+        for u32 i in 4..STR_LENGTH do
+                s_65[i] = p_19[i] && (s_61[i - 4])
+        endfor
+        bool[STR_LENGTH] s_66 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_66[i] = p_13[i] && (s_65[i - 1])
+        endfor
+        bool[STR_LENGTH] s_68 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_68[i] = p_10[i] && (s_65[i - 1] || s_66[i - 1])
+        endfor
+        bool[STR_LENGTH] s_71 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_71[i] = p_5[i] && (s_62[i - 1] || s_63[i - 1] || s_64[i - 1] || s_65[i - 1] || s_66[i - 1] || s_68[i - 1])
+        endfor
+        bool[STR_LENGTH] f_72 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                f_72[i] = (s_57[i] || s_71[i])
+                assert(!f_72[i])
+        endfor
+        bool[STR_LENGTH] s_73 = [false;STR_LENGTH]
+        for u32 i in 2..STR_LENGTH do
+                s_73[i] = p_20[i] && start[i - 2]
+        endfor
+        bool[STR_LENGTH] s_74 = [false;STR_LENGTH]
+        for u32 i in 8..STR_LENGTH do
+                s_74[i] = p_21[i] && start[i - 8]
+        endfor
+        bool[STR_LENGTH] f_75 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                f_75[i] = (s_73[i] || s_74[i])
+                assert(!f_75[i])
+        endfor
+        bool[STR_LENGTH] s_76 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_76[i] = p_22[i] && start[i - 1]
+        endfor
+        bool[STR_LENGTH] s_77 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_77[i] = p_0[i] && (s_76[i - 1])
+        endfor
+        bool[STR_LENGTH] s_78 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_78[i] = p_0[i] && (s_77[i - 1])
+        endfor
+        bool[STR_LENGTH] s_79 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_79[i] = p_22[i] && (s_78[i - 1])
+        endfor
+        bool[STR_LENGTH] s_80 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_80[i] = p_23[i] && (s_79[i - 1])
+        endfor
+        bool[STR_LENGTH] s_82 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_82[i] = p_22[i] && (s_79[i - 1] || s_80[i - 1])
+        endfor
+        bool[STR_LENGTH] s_83 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_83[i] = p_24[i] && (s_82[i - 1])
+        endfor
+        bool[STR_LENGTH] s_84 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_84[i] = p_0[i] && (s_83[i - 1])
+        endfor
+        bool[STR_LENGTH] s_85 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_85[i] = p_25[i] && (s_83[i - 1])
+        endfor
+        bool[STR_LENGTH] s_87 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_87[i] = p_26[i] && (s_84[i - 1] || s_85[i - 1])
+        endfor
+        bool[STR_LENGTH] s_88 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_88[i] = p_27[i] && (s_84[i - 1] || s_85[i - 1])
+        endfor
+        bool[STR_LENGTH] s_90 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_90[i] = p_28[i] && (s_87[i - 1] || s_88[i - 1])
+        endfor
+        bool[STR_LENGTH] s_91 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_91[i] = p_22[i] && (s_87[i - 1] || s_88[i - 1])
+        endfor
+        bool[STR_LENGTH] s_93 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_93[i] = p_29[i] && (s_90[i - 1] || s_91[i - 1])
+        endfor
+        bool[STR_LENGTH] s_94 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_94[i] = p_22[i] && (s_93[i - 1])
+        endfor
+        bool[STR_LENGTH] s_95 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_95[i] = p_23[i] && (s_94[i - 1])
+        endfor
+        bool[STR_LENGTH] s_97 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_97[i] = p_22[i] && (s_94[i - 1] || s_95[i - 1])
+        endfor
+        bool[STR_LENGTH] s_98 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_98[i] = p_0[i] && (s_97[i - 1])
+        endfor
+        bool[STR_LENGTH] s_99 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_99[i] = p_0[i] && (s_98[i - 1])
+        endfor
+        bool[STR_LENGTH] s_100 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_100[i] = p_0[i] && (s_99[i - 1])
+        endfor
+        bool[STR_LENGTH] s_101 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_101[i] = p_0[i] && (s_100[i - 1])
+        endfor
+        bool[STR_LENGTH] f_102 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                f_102[i] = p_22[i] && (s_101[i - 1])
+                assert(!f_102[i])
+        endfor
+        bool[STR_LENGTH] s_103 = [false;STR_LENGTH]
+        for u32 i in 3..STR_LENGTH do
+                s_103[i] = p_30[i] && start[i - 3]
+        endfor
+        bool[STR_LENGTH] s_104 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_104[i] = p_5[i] && (s_103[i - 1])
+        endfor
+        bool[STR_LENGTH] s_106 = [false;STR_LENGTH]
+        for u32 i in 5..STR_LENGTH do
+                s_106[i] = p_31[i] && (s_103[i - 5] || s_104[i - 5])
+        endfor
+        bool[STR_LENGTH] s_107 = [false;STR_LENGTH]
+        for u32 i in 3..STR_LENGTH do
+                s_107[i] = p_30[i] && (s_103[i - 3] || s_104[i - 3])
+        endfor
+        bool[STR_LENGTH] s_109 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_109[i] = p_5[i] && (s_106[i - 1] || s_107[i - 1])
+        endfor
+        bool[STR_LENGTH] s_111 = [false;STR_LENGTH]
+        for u32 i in 2..STR_LENGTH do
+                s_111[i] = p_16[i] && (s_106[i - 2] || s_107[i - 2] || s_109[i - 2])
+        endfor
+        bool[STR_LENGTH] s_112 = [false;STR_LENGTH]
+        for u32 i in 3..STR_LENGTH do
+                s_112[i] = p_32[i] && (s_106[i - 3] || s_107[i - 3] || s_109[i - 3])
+        endfor
+        bool[STR_LENGTH] s_113 = [false;STR_LENGTH]
+        for u32 i in 8..STR_LENGTH do
+                s_113[i] = p_33[i] && (s_106[i - 8] || s_107[i - 8] || s_109[i - 8])
+        endfor
+        bool[STR_LENGTH] s_114 = [false;STR_LENGTH]
+        for u32 i in 3..STR_LENGTH do
+                s_114[i] = p_34[i] && (s_106[i - 3] || s_107[i - 3] || s_109[i - 3])
+        endfor
+        bool[STR_LENGTH] s_115 = [false;STR_LENGTH]
+        for u32 i in 15..STR_LENGTH do
+                s_115[i] = p_35[i] && (s_106[i - 15] || s_107[i - 15] || s_109[i - 15])
+        endfor
+        bool[STR_LENGTH] f_116 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                f_116[i] = (s_111[i] || s_112[i] || s_113[i] || s_114[i] || s_115[i])
+                assert(!f_116[i])
+        endfor
+        bool[STR_LENGTH] s_117 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_117[i] = p_0[i] && start[i - 1]
+        endfor
+        bool[STR_LENGTH] s_118 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_118[i] = p_0[i] && (s_117[i - 1])
+        endfor
+        bool[STR_LENGTH] s_119 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_119[i] = p_0[i] && (s_118[i - 1])
+        endfor
+        bool[STR_LENGTH] s_120 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_120[i] = p_36[i] && (s_119[i - 1])
+        endfor
+        bool[STR_LENGTH] s_121 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_121[i] = p_0[i] && (s_120[i - 1])
+        endfor
+        bool[STR_LENGTH] s_122 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_122[i] = p_0[i] && (s_121[i - 1])
+        endfor
+        bool[STR_LENGTH] s_123 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_123[i] = p_36[i] && (s_122[i - 1])
+        endfor
+        bool[STR_LENGTH] s_124 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_124[i] = p_36[i] && (s_123[i - 1])
+        endfor
+        bool[STR_LENGTH] s_125 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_125[i] = p_0[i] && (s_124[i - 1])
+        endfor
+        bool[STR_LENGTH] s_126 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_126[i] = p_0[i] && (s_125[i - 1])
+        endfor
+        bool[STR_LENGTH] s_127 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_127[i] = p_0[i] && (s_126[i - 1])
+        endfor
+        bool[STR_LENGTH] s_128 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_128[i] = p_0[i] && (s_127[i - 1])
+        endfor
+        bool[STR_LENGTH] s_129 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_129[i] = p_36[i] && (s_128[i - 1])
+        endfor
+        bool[STR_LENGTH] f_130 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                f_130[i] = p_36[i] && (s_129[i - 1])
+                assert(!f_130[i])
+        endfor
+        bool[STR_LENGTH] s_131 = [false;STR_LENGTH]
+        for u32 i in 10..STR_LENGTH do
+                s_131[i] = p_37[i] && start[i - 10]
+        endfor
+        bool[STR_LENGTH] s_132 = [false;STR_LENGTH]
+        for u32 i in 15..STR_LENGTH do
+                s_132[i] = p_35[i] && start[i - 15]
+        endfor
+        bool[STR_LENGTH] s_134 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_134[i] = p_5[i] && (s_131[i - 1] || s_132[i - 1])
+        endfor
+        bool[STR_LENGTH] s_135 = [false;STR_LENGTH]
+        for u32 i in 6..STR_LENGTH do
+                s_135[i] = p_17[i] && (s_134[i - 6])
+        endfor
+        bool[STR_LENGTH] s_136 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_136[i] = p_38[i] && (s_134[i - 1])
+        endfor
+        bool[STR_LENGTH] s_137 = [false;STR_LENGTH]
+        for u32 i in 2..STR_LENGTH do
+                s_137[i] = p_39[i] && (s_134[i - 2])
+        endfor
+        bool[STR_LENGTH] s_139 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_139[i] = p_5[i] && (s_135[i - 1] || s_136[i - 1] || s_137[i - 1])
+        endfor
+        bool[STR_LENGTH] s_140 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_140[i] = p_38[i] && (s_131[i - 1] || s_132[i - 1])
+        endfor
+        bool[STR_LENGTH] s_142 = [false;STR_LENGTH]
+        for u32 i in 7..STR_LENGTH do
+                s_142[i] = p_40[i] && (s_131[i - 7] || s_132[i - 7])
+        endfor
+        bool[STR_LENGTH] s_143 = [false;STR_LENGTH]
+        for u32 i in 2..STR_LENGTH do
+                s_143[i] = p_41[i] && (s_131[i - 2] || s_132[i - 2])
+        endfor
+        bool[STR_LENGTH] s_145 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_145[i] = p_42[i] && (s_139[i - 1] || s_140[i - 1] || s_142[i - 1] || s_143[i - 1])
+        endfor
+        bool[STR_LENGTH] s_146 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_146[i] = p_10[i] && (s_139[i - 1] || s_140[i - 1] || s_142[i - 1] || s_143[i - 1])
+        endfor
+        bool[STR_LENGTH] s_148 = [false;STR_LENGTH]
+        for u32 i in 4..STR_LENGTH do
+                s_148[i] = p_43[i] && (s_139[i - 4] || s_140[i - 4] || s_142[i - 4] || s_143[i - 4])
+        endfor
+        bool[STR_LENGTH] f_149 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                f_149[i] = (s_145[i] || s_146[i] || s_148[i])
+                assert(!f_149[i])
+        endfor
+        bool[STR_LENGTH] s_150 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_150[i] = p_44[i] && start[i - 1]
+        endfor
+        bool[STR_LENGTH] s_151 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_151[i] = p_0[i] && (s_150[i - 1])
+        endfor
+        bool[STR_LENGTH] s_152 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_152[i] = p_0[i] && (s_151[i - 1])
+        endfor
+        bool[STR_LENGTH] s_153 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_153[i] = p_0[i] && (s_152[i - 1])
+        endfor
+        bool[STR_LENGTH] s_154 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_154[i] = p_0[i] && (s_153[i - 1])
+        endfor
+        bool[STR_LENGTH] s_155 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_155[i] = p_0[i] && (s_154[i - 1])
+        endfor
+        bool[STR_LENGTH] s_156 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_156[i] = p_0[i] && (s_155[i - 1])
+        endfor
+        bool[STR_LENGTH] s_157 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_157[i] = p_0[i] && (s_156[i - 1])
+        endfor
+        bool[STR_LENGTH] f_158 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                f_158[i] = p_0[i] && (s_157[i - 1])
+                assert(!f_158[i])
+        endfor
+        bool[STR_LENGTH] s_159 = [false;STR_LENGTH]
+        for u32 i in 7..STR_LENGTH do
+                s_159[i] = p_45[i] && start[i - 7]
+        endfor
+        bool[STR_LENGTH] s_160 = [false;STR_LENGTH]
+        for u32 i in 2..STR_LENGTH do
+                s_160[i] = p_46[i] && start[i - 2]
+        endfor
+        bool[STR_LENGTH] s_162 = [false;STR_LENGTH]
+        for u32 i in 9..STR_LENGTH do
+                s_162[i] = p_47[i] && (s_159[i - 9] || s_160[i - 9])
+        endfor
+        bool[STR_LENGTH] s_163 = [false;STR_LENGTH]
+        for u32 i in 8..STR_LENGTH do
+                s_163[i] = p_48[i] && start[i - 8]
+        endfor
+        bool[STR_LENGTH] s_165 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_165[i] = p_5[i] && (s_162[i - 1] || s_163[i - 1])
+        endfor
+        bool[STR_LENGTH] s_167 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_167[i] = p_10[i] && (s_162[i - 1] || s_163[i - 1] || s_165[i - 1])
+        endfor
+        bool[STR_LENGTH] s_168 = [false;STR_LENGTH]
+        for u32 i in 2..STR_LENGTH do
+                s_168[i] = p_39[i] && (s_162[i - 2] || s_163[i - 2] || s_165[i - 2])
+        endfor
+        bool[STR_LENGTH] s_169 = [false;STR_LENGTH]
+        for u32 i in 6..STR_LENGTH do
+                s_169[i] = p_17[i] && (s_162[i - 6] || s_163[i - 6] || s_165[i - 6])
+        endfor
+        bool[STR_LENGTH] s_170 = [false;STR_LENGTH]
+        for u32 i in 7..STR_LENGTH do
+                s_170[i] = p_18[i] && (s_162[i - 7] || s_163[i - 7] || s_165[i - 7])
+        endfor
+        bool[STR_LENGTH] s_172 = [false;STR_LENGTH]
+        for u32 i in 2..STR_LENGTH do
+                s_172[i] = p_16[i] && (s_162[i - 2] || s_163[i - 2])
+        endfor
+        bool[STR_LENGTH] s_173 = [false;STR_LENGTH]
+        for u32 i in 1..STR_LENGTH do
+                s_173[i] = p_13[i] && (s_162[i - 1] || s_163[i - 1])
+        endfor
+        bool[STR_LENGTH] f_174 = [false;STR_LENGTH]
+        for u32 i in 0..STR_LENGTH do
+                f_174[i] = (s_167[i] || s_168[i] || s_169[i] || s_170[i] || s_172[i] || s_173[i])
+                assert(!f_174[i])
+        endfor
+        assert(procCheck(f_20, f_38))
+        assert(procCheck(f_49, f_72))
+        assert(procCheck(f_49, f_75))
+        assert(procCheck(f_102, f_116))
+        assert(procCheck(f_130, f_149))
+        assert(procCheck(f_158, f_174))
+        return false

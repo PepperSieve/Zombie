@@ -1,0 +1,4 @@
+from "./membership_merkle/non_membership.zok" import check_wildcard_python_path
+
+def main(u8[255] input_domain_wildcard, field root, private u8[255] left_domain_name, private u8[255] right_domain_name, private u32 left_index, private u32 right_index, private field[21] left_path_array, private field[21] right_path_array, private u64 left_dir, private u64 right_dir) -> bool:
+    return check_wildcard_python_path::<21>(input_domain_wildcard, root, left_domain_name, right_domain_name, left_index, right_index, left_path_array, right_path_array, left_dir, right_dir)

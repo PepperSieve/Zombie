@@ -1,0 +1,41 @@
+[package]
+name = "rusticata"
+version = "0.1.0"
+description = "Protocol decoders and parsers for network analyzers"
+license = "LGPL-2.1+"
+keywords = ["Suricata","IDS","TLS","SSL","protocol","parser","nom"]
+homepage = "https://github.com/rusticata/rusticata"
+repository = "https://github.com/rusticata/rusticata.git"
+authors = ["Pierre Chifflier <chifflier@wzdftpd.net>"]
+categories = ["network-programming", "parser-implementations"]
+edition = "2018"
+
+# [lib]
+# crate-type = ["dylib"]
+# # crate-type = ["staticlib"]
+
+[dependencies]
+log = "0.4.6"
+nom = "7.0"
+itertools = "0.10"
+md5 = "0.7"
+der-parser = "8.0"
+dhcp4r = "0.2.1"
+dns-parser = "0.8"
+httparse = "1.3"
+ipsec-parser = "0.7"
+kerberos-parser = "0.7"
+ldap-parser = "0.3"
+netbios-parser = "0.2"
+ntp-parser = "0.6"
+openvpn-parser = "0.6"
+radius-parser = "0.5"
+snmp-parser = "0.8"
+ssh-parser = "0.5"
+tls-parser = { version="0.12", git="https://github.com/rusticata/tls-parser" }
+# tls-parser = { version="0.12", path="../tls-parser" }
+x509-parser = "0.14"
+
+[dev-dependencies]
+env_logger = "0.9"
+hex-literal = "0.3"

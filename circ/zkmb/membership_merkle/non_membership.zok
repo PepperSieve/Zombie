@@ -1,0 +1,104 @@
+from "./MerkleAuthPath.zok" import computeMerkleRoot
+from "../../third_party/ZoKrates/zokrates_stdlib/stdlib/hashes/poseidon/poseidon.zok" import generate_poseidon
+from "EMBED" import u8_to_bits, u8_to_u32
+import "../../third_party/ZoKrates/zokrates_stdlib/stdlib/utils/pack/bool/pack.zok" as pack
+from "../Util.zok" import pack_u8_arr
+
+// reverse the u8 arr, convert the arr to bits in big endian, take the last 252 bits to int
+def convert_8_to_Fp_python(u8[255] u8_arr) -> field[8]:
+    bool[2040] bit_array = [false; 2040]
+    for u32 i in 0..255 do
+        bool[8] u8_bits = u8_to_bits(u8_arr[255 - i - 1])
+        for u32 j in 0..8 do
+            bit_array[i * 8 + j] = u8_bits[j]
+        endfor
+    endfor
+    field[8] result = [0; 8]
+    for u32 i in 0..8 do
+        // dalek curve field is (2 * 252 + 27742317777372353535851937790883648493)
+        // still take 253 bits though
+        bool[252] current_bits = [false; 252]
+        for u32 j in 0..252 do
+            current_bits[252 - j - 1] = bit_array[2040 - (253 * i + j) - 1]
+        endfor
+        result[i] = pack(current_bits)
+    endfor
+    return result
+
+// def check_nonmember_path<HEIGHT>(Fp domain, Fp left_name, Fp right_name, field root, field[HEIGHT] left_path, field[HEIGHT] right_path, bool[HEIGHT] flip):
+//     // assert that left_name < root < right_name
+//     assert(left_name < root)
+//     assert(root < right_name)
+
+//     // show that the entry left_name | right_name appears in the merkle tree
+//     Fp r = root
+//     for u32 i in 0..HEIGHT do 
+//       assert(r == generate_poseidon([left_path[i], right_path[i]]))
+//       r = if flip[i] then right_path[i] else left_path[i]
+//     endfor
+//     assert(r == poseidon([left_name, right_name]))
+
+def check_wildcard_python_path<HEIGHT>(u8[255] input_domain_name_wildcard, field root, u8[255] left_domain_name, u8[255] right_domain_name, u32 left_index, u32 right_index, field[HEIGHT] left_path_array, field[HEIGHT] right_path_array, u64 left_dir, u64 right_dir) -> bool:
+    field[8] left_domain_name_input = convert_8_to_Fp_python(left_domain_name)
+    field[8] right_domain_name_input = convert_8_to_Fp_python(right_domain_name)
+     
+    // compute the hash of left and right domain name in the first layer 
+    // The needs an 8-input Poseidon Hash since domain name has a larger size
+    // TODO: figure out poseidon 8 here
+    field left_leaf = generate_poseidon::<8>(left_domain_name_input)
+    field right_leaf = generate_poseidon::<8>(right_domain_name_input)
+     
+    // compute the Merkle Root using left_left and right_left verifiably 
+    field left_root = computeMerkleRoot(left_leaf, left_dir, left_path_array)
+    field right_root = computeMerkleRoot(right_leaf, right_dir, right_path_array)
+
+    // compare that roots are the same (public input root, roots computed from left and right) 
+    // It can prove that both left_leaf and right_leaf exist in Merkle Tree
+    bool[1000] result = [false; 1000]
+    bool ok = true
+    ok = ok && (left_root == root)
+    ok = ok && (right_root == root) 
+     
+    // Prove that left_leaf and right_leaf are adjacent! 
+    // The directionSelector is exactly the same as leaf's index position in first layer 
+    ok = ok && (left_dir + 1 == right_dir) 
+     
+    // Prove that left_leaf is indead smaller than right_leaf 
+    // This firstly checks left_index and right_index for exact matching and then checks the next is smaller 
+    // check out the notes for the algorithm 
+
+    field left_name = pack_u8_arr::<31>(left_domain_name[0..31])
+    field right_name = pack_u8_arr::<31>(right_domain_name[0..31])
+    field current_name = pack_u8_arr::<31>(input_domain_name_wildcard[0..31])
+    ok = ok && (left_name < current_name)
+    ok = ok && (current_name < right_name)
+    
+    // for u32 i in 0..255 do
+    //     bool left_case1 = i < left_index && left_domain_name[i] == input_domain_name_wildcard[i]
+    //     bool left_case2 = i == left_index && (left_domain_name[i] < input_domain_name_wildcard[i]) && (left_domain_name[i] != 0)
+    //     ok = ok && (left_case1 || left_case2 || i > left_index)
+       
+    //     bool right_case1 = i < right_index && right_domain_name[i] == input_domain_name_wildcard[i]
+    //     bool right_case2 = i == right_index && right_domain_name[i] > input_domain_name_wildcard[i]
+    //     ok = ok && (right_case1 || right_case2 || i > right_index)
+    // endfor
+    return ok
+
+
+def main(u8[255] input_domain_name_wildcard, field root, u8[255] left_domain_name, u8[255] right_domain_name, u32 left_index, u32 right_index, field[21] left_path_array, field[21] right_path_array, u64 left_dir, u64 right_dir) -> bool:
+    return check_wildcard_python_path::<21>(input_domain_name_wildcard, root, left_domain_name, right_domain_name, left_index, right_index, left_path_array, right_path_array, left_dir, right_dir)
+
+// def main() -> bool:
+//     u8[255] input_domain_name_wildcard = [109, 111, 99, 46, 110, 111, 122, 97, 109, 97, 46, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+//     field root = 5972733345965465510373436926431083918242531555386867859948086370295902707692
+//     // moc.nozalleb.
+//     u8[255] left_domain_name = [109, 111, 99, 46, 110, 111, 122, 97, 108, 108, 101, 98, 46, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+//     // moc.nozamaainat.
+//     u8[255] right_domain_name = [109, 111, 99, 46, 110, 111, 122, 97, 109, 97, 97, 105, 110, 97, 116, 46, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+//     u32 left_index = 8
+//     u32 right_index = 10
+//     field[21] left_path_array = [5810949145975268983677078150180109141833000559744284858058387945943982818158, 5725556692859964327615384670197743052032183597439067324056707782326754149039, 737987365019311986891486759646137884024555062575870812152535107633274882125, 6978415864521499843092624111016722859262479622172662553536833301034271706262, 4135208064219040665956576816380326101812041259000783076266688443246751604503, 3170260842944628279187126241517526053484378541795476268362403230613442052402, 4342359007634045612907285413193091075155071579174992137913324882848900239346, 865863211191910612990543945914043484144675745694815540239437037901450625109, 5338245711792133777698393453750146971681819747170395242636501304932379809960, 3971599647525318441413019352449721743960136015973593568651374667343390396180, 6781766165911636738711413118313274719395557174639193685513603627811259323393, 6567640779716870031735217184183741356489258821829157665850681332082834576535, 6191305287335176564696816642287358623642659237049314275921775543604346368066, 6966400339991045274968589508279503115523111941692065146897205830618452544258, 1932855327274373118649578109656632980426924425832054484211124717453633370522, 2422517079429369491095512851537216478826546687856281300427936709663355540147, 1828355802689263445921624588217734691264544626928882494763041934854213400746, 5425169782538910714092423632218831094890099464960756551344981699594055460447, 2326252787767864222978752870209848689412849751880836738068297509804573644232, 2926199112255787778707184107940826811888856500774718781576137388347946365290, 5862428253581911978164236873998992598944144594277149928428395602902613123842]
+//     field[21] right_path_array = [4839109933088249563345538684967196188604080928683251255855801088884596272688, 5725556692859964327615384670197743052032183597439067324056707782326754149039, 737987365019311986891486759646137884024555062575870812152535107633274882125, 6978415864521499843092624111016722859262479622172662553536833301034271706262, 4135208064219040665956576816380326101812041259000783076266688443246751604503, 3170260842944628279187126241517526053484378541795476268362403230613442052402, 4342359007634045612907285413193091075155071579174992137913324882848900239346, 865863211191910612990543945914043484144675745694815540239437037901450625109, 5338245711792133777698393453750146971681819747170395242636501304932379809960, 3971599647525318441413019352449721743960136015973593568651374667343390396180, 6781766165911636738711413118313274719395557174639193685513603627811259323393, 6567640779716870031735217184183741356489258821829157665850681332082834576535, 6191305287335176564696816642287358623642659237049314275921775543604346368066, 6966400339991045274968589508279503115523111941692065146897205830618452544258, 1932855327274373118649578109656632980426924425832054484211124717453633370522, 2422517079429369491095512851537216478826546687856281300427936709663355540147, 1828355802689263445921624588217734691264544626928882494763041934854213400746, 5425169782538910714092423632218831094890099464960756551344981699594055460447, 2326252787767864222978752870209848689412849751880836738068297509804573644232, 2926199112255787778707184107940826811888856500774718781576137388347946365290, 5862428253581911978164236873998992598944144594277149928428395602902613123842]
+//     u64 left_dir = 852258
+//     u64 right_dir = 852259
+//     return check_wildcard_python_path(input_domain_name_wildcard, root, left_domain_name, right_domain_name, left_index, right_index, left_path_array, right_path_array, left_dir, right_dir)

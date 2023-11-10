@@ -1,0 +1,50 @@
+from "../third_party/ZoKrates/zokrates_stdlib/stdlib/hashes/poseidon/poseidon.zok" import generate_poseidon
+from "AES.zok" import aes_gcm_encrypt
+from "Util.zok" import xor_field, field_to_u8_array, pack_u8_arr, u32_to_four_u8, compare_field
+from "LabelExtraction.zok" import extractDoHGETReverse
+from "./membership_merkle/non_membership.zok" import check_wildcard_python_path
+
+const u32 BYTES_PER_FIELD = 31 // floor(254/8)
+const u32 NUM_FIELDS = 17 // ceil(500/31)
+const u32 REMAINDER = 4 // 500 % 31
+
+def main(private u8[16] key, private u8[12] iv, field comm, u32 SN) -> field:
+        field key_field = pack_u8_arr(key)
+        field iv_field = pack_u8_arr(iv)
+        field comm_cal = generate_poseidon([key_field, iv_field])
+
+        bool ok = true
+        ok = (comm == comm_cal)
+
+        u8[4] SN_u8 = u32_to_four_u8(SN)
+        for u32 i in 0..4 do
+            iv[12 - i - 1] = iv[12 - i - 1] ^ SN_u8[4 - i - 1]
+        endfor
+
+        u8[500] pad = [0; 500]
+        pad = aes_gcm_encrypt::<500>(key, iv, [0; 500])
+
+        // map 31 x 16 = 496 elements
+        // then remanining 4 
+        u8[NUM_FIELDS][31] reorg_pad = [[0;31]; NUM_FIELDS]
+        for u32 i in 0..(NUM_FIELDS-1) do
+            for u32 j in 0..31 do
+                reorg_pad[i][j] = pad[i*31 + j]
+            endfor 
+        endfor 
+
+        for u32 i in 0..REMAINDER do 
+            reorg_pad[NUM_FIELDS-1][i] = pad[(NUM_FIELDS-1)*31 + i]
+        endfor 
+
+        field[NUM_FIELDS] packed_fields = [0f; NUM_FIELDS]
+        for u32 i in 0..NUM_FIELDS do
+            packed_fields[i] = pack_u8_arr::<31>(reorg_pad[i])
+        endfor 
+
+        field pad_comm = 0f
+        for u32 i in 0..NUM_FIELDS do 
+            pad_comm = generate_poseidon([pad_comm, packed_fields[i]])
+        endfor 
+        
+        return pad_comm

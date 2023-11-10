@@ -1,0 +1,6 @@
+[submodule "third_party/Spartan"]
+	path = third_party/Spartan
+	url = https://github.com/PepperSieve/Spartan
+[submodule "third_party/curves"]
+	path = third_party/curves
+	url = https://github.com/arkworks-rs/curves

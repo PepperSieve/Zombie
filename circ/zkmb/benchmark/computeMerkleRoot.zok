@@ -1,0 +1,4 @@
+from "../membership_merkle/MerkleAuthPath.zok" import computeMerkleRoot
+
+def main(field leaf, u64 directionSelector, field[21] digests) -> field:
+    return computeMerkleRoot(leaf, directionSelector, digests)

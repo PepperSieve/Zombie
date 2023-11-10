@@ -1,0 +1,4 @@
+import "./sha256" as sha256
+
+def main(u32[16] a) -> u32[8]:
+	return sha256([a])

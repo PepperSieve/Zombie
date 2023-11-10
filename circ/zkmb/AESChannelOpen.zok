@@ -1,0 +1,13 @@
+from "./tls_key_schedules/tls_key_schedule.zok" import get1RTT_HS_only_CO_AES 
+from "Util.zok" import pack_u8_arr
+from "../third_party/ZoKrates/zokrates_stdlib/stdlib/hashes/poseidon/poseidon.zok" import generate_poseidon
+
+def main(private u8[32] HS, u8[32] H2, u16 CH_SH_len, u16 ServExt_len, u8[128] ServExt_ct_tail, u8 ServExt_tail_len, private u32[8] SHA_H_Checkpoint, field comm) -> bool:
+    u8[28] values = get1RTT_HS_only_CO_AES(HS, H2, CH_SH_len, ServExt_len, ServExt_ct_tail, ServExt_tail_len, SHA_H_Checkpoint)
+    u8[16] key = values[0..16]
+    u8[12] nonce = values[16..28]
+    field key_field = pack_u8_arr(key)
+    field nonce_field = pack_u8_arr(nonce)
+    field comm_cal = generate_poseidon([key_field, nonce_field])
+    assert(comm_cal == comm)
+    return comm_cal == comm
