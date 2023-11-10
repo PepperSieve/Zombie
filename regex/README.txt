@@ -1,5 +1,5 @@
 To build run `make`.
 
-The Regexp Nonmembership to ZoKrates pipeline can be run with `./bin/TestRegexp`.
+The Regexp Nonmembership to ZoKrates pipeline can be run with `./bin/TestRegex`.
 
-Run `./bin/TestRegexp` with no arguments to see the usage instructions.
+Run `./bin/TestRegex` with no arguments to see the usage instructions.
