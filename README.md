@@ -1,6 +1,6 @@
-# Zombie: Middleboxes that Don't Snoop Implementation
+# Implementation of Zombie
 
-Zombie is a implementation of the system described in [https://eprint.iacr.org/2023/1022.pdf](https://eprint.iacr.org/2023/1022.pdf).
+This is the source code for Zombie, as described in [https://eprint.iacr.org/2023/1022.pdf](https://eprint.iacr.org/2023/1022.pdf).
 
 ## Repository Organization
 
